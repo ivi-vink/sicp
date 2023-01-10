@@ -13,4 +13,4 @@
 (define (fast-expt b n)
   (fie 1 b n))
 
-(fast-expt 3 4)
+(fast-expt 5 5)
