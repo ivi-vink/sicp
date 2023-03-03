@@ -12,7 +12,7 @@
     (else x))) ;; no root found
 
 (define (expmod base e m)
-  (cond 
+  (cond
     ((= e 0) 1)
     ((even? e)
      (signal base e m (remainder (square (expmod base (/ e 2) m)) m)))
@@ -30,4 +30,4 @@
         (else false)))
   (f n n))
 
-(all-mr 1)
+(all-mr 5)

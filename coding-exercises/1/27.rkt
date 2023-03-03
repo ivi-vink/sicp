@@ -5,7 +5,7 @@
   (* x x))
 
 (define (expmod base e m)
-  (cond 
+  (cond
     ((= e 0) 1)
     ((even? e)
      (remainder (square (expmod base (/ e 2) m)) m))
