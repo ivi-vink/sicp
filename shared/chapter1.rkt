@@ -29,6 +29,25 @@
   smallest-divisor)
 (require sicp)
 
+;;abstract procedures
+(define (iterative-improve good-enuf? improve)
+  (lambda (guess)
+    (define (try g)
+      (let ((next (improve g)))
+         (if (good-enuf? next g)
+           next
+           (try next))))
+    (try guess)))
+
+(define (filtered-accumulate pred combiner null-value term a next b)
+  (define (iter a result)
+    (cond
+      ((> a b) result)
+      ((pred a)
+       (iter (next a) (combiner (term a) result)))
+      (else (iter (next a) result))))
+  (iter a null-value))
+
 ;; basic
 (define (cube x) (* x x x))
 (define (square x) (* x x))
@@ -113,6 +132,12 @@
           true))
        false)))
 
+(define (fixed-point f first-guess)
+  ((iterative-improve
+     (close-enough? 0.0001)
+     f)
+   first-guess))
+
 (define (golden-ratio)
   (fixed-point
     (lambda (x) (+ 1 (/ 1 x)))
@@ -171,29 +196,3 @@
         ((miller-raban-test (- a 1) n) (iter (- a 1) n))
         (else false)))
   (iter n n))
-
-;;abstract procedures
-(define (iterative-improve good-enuf? improve)
-  (lambda (guess)
-    (define (try g)
-      (let ((next (improve g)))
-         (if (good-enuf? next g)
-           next
-           (try next))))
-    (try guess)))
-
-(define (fixed-point f first-guess)
-  ((iterative-improve
-     (close-enough? 0.0001)
-     f)
-   first-guess))
-
-(define (filtered-accumulate pred combiner null-value term a next b)
-  (define (iter a result)
-    (cond
-      ((> a b) result)
-      ((pred a)
-       (iter (next a) (combiner (term a) result)))
-      (else (iter (next a) result))))
-  (iter a null-value))
-
