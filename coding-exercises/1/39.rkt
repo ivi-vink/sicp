@@ -1,8 +1,6 @@
 #lang racket
+(require "../../shared/chapter1.rkt")
 (require sicp)
-
-(define (odd? i)
-  (= 1 (remainder i 2)))
 
 ;; iter up
 (define (cont-frac n d k)
@@ -17,7 +15,7 @@
 ;; test
 (define (tan-cf x k)
     (cont-frac
-      (lambda (i) 
+      (lambda (i)
         (cond
           ((= i 1) x)
           ((> i 1) (* -1 (* x x)))

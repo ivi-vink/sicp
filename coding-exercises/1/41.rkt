@@ -2,4 +2,4 @@
 (require "../../shared/chapter1.rkt")
 (require sicp)
 
-(all-fermat 561)
+(((double (double double)) inc) 5)

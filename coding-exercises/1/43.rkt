@@ -2,4 +2,4 @@
 (require "../../shared/chapter1.rkt")
 (require sicp)
 
-(all-fermat 561)
+((repeated square 2) 5)
