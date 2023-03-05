@@ -1,0 +1,38 @@
+#lang racket
+(provide
+  width)
+(require 
+  "7.rkt"
+  "8.rkt"
+  "9.rkt")
+
+(define (width x)
+  (/ (- (upper-bound x) (lower-bound x)) 2))
+ 
+(define (print-sum)
+  (newline)
+  (println "*** (width SUM) == (SUM width) ***")
+  (define a (make-interval 1 8))
+  (define b (make-interval 3 8))
+  (define c (add-interval a b))
+  (define d (sub-interval a b))
+  (define add-width (lambda (x y) (+ (width x) (width y))))
+  (print-interval a) (newline) (println (width a))
+  (print-interval c) (newline) (println (width c))
+  (println (add-width a b))
+  (print-interval d) (newline) (println (width d))
+  (println (add-width a b)))
+(print-sum)
+
+(define (print-mul)
+  (newline) (println " http://community.schemewiki.org/?sicp-ex-2.9 ")
+  (newline) (println " *** Multiplication: two pairs of different intervals with same width *** ")
+  (newline) (println " Can also be check algebraicly")
+  (define a (make-interval 1 8))
+  (define b (make-interval 3 8))
+  (define c (make-interval 0 7))
+  (define d (make-interval 0 5))
+  (println (width (mul-interval a b)))
+  (newline)
+  (println (width (mul-interval c d))))
+(print-mul)
