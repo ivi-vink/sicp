@@ -1,12 +1,4 @@
 #lang racket
-(provide
-  make-interval
-  upper-bound
-  lower-bound
-  add-interval
-  mul-interval
-  div-interval
-  print-interval)
 
 (define (add-interval x y)
   (make-interval (+ (lower-bound x) (lower-bound y))

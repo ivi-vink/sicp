@@ -1,8 +1,5 @@
 #lang racket
-(require 
-  "7.rkt"
-  "8.rkt"
-  "9.rkt")
+(require "../../shared/intervals.rkt")
 
 (define (div-interval x y)
   (if (and (< 0 (lower-bound y)) (> 0 (upper-bound y)))

@@ -1,14 +1,9 @@
 #lang racket
-(provide
-  width)
-(require 
-  "7.rkt"
-  "8.rkt"
-  "9.rkt")
+(require "../../shared/intervals.rkt")
 
 (define (width x)
   (/ (- (upper-bound x) (lower-bound x)) 2))
- 
+
 (define (print-sum)
   (newline)
   (println "*** (width SUM) == (SUM width) ***")

@@ -1,7 +1,5 @@
 #lang racket
-(provide
-  sub-interval)
-(require "7.rkt")
+(require "../../shared/intervals.rkt")
 
 (define (sub-interval x y)
   (make-interval (- (lower-bound x) (upper-bound y))
