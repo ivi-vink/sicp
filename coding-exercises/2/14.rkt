@@ -49,9 +49,12 @@
     (print-interval-percent (mul-interval i1 i1))
     (print-interval-percent (mul-interval i1 i2))))
   
-;; There are at least some problems as I understand:
+;; There are at least some problems as I understand from 2.14 and 2.15:
 ;; 1. Repeated intervals in an equation are dependent on each other
 ;; 2. Multiplicative identity is undefined and should not be uncertain
+;;
+;; In 2.16 I would try to rewrite the code to try to make the inverse under multiplication certain
+;; and would try to keep track of dependent intervals and maybe only introduce uncertainty once.
 (define (print-lem)
   (let ((i1 (make-center-percent 100.0 2.0))
         (i2 (make-center-percent 200.0 3.0)))
