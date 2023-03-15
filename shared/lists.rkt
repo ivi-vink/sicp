@@ -1,9 +1,4 @@
 #lang racket
-(provide
-  append
-  length
-  list-ref)
-
 (define (append list1 list2)
   (if (null? list1)
     list2
@@ -19,9 +14,10 @@
 (define (list-ref items n)
   (if (= n 0)
     (car items)
-    (list-ref 
-      (cdr items) 
+    (list-ref
+      (cdr items)
       (- 1 n))))
+
 (define (last-pair l)
   (if (null? (cdr l))
     l

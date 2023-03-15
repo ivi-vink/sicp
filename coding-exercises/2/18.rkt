@@ -3,13 +3,13 @@
 
 ;; grow in reverse method
 ;; or pointer reversal method in other languages
-(define (reverse-rec l) 
+(define (reverse l)
   (define (iter l p)
-   (cond 
+   (cond
      ((null? l) p)
      (else
-      (iter 
-        (cdr l) 
+      (iter
+        (cdr l)
         (cons (car l) p)))))
   (iter l (list)))
 
