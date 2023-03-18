@@ -1,4 +1,8 @@
 #lang racket
+(provide accumulate
+         accumulate-n
+         fold-right
+         fold-left)
 (define (append list1 list2)
   (if (null? list1)
     list2
@@ -22,3 +26,25 @@
   (if (null? (cdr l))
     l
     (last-pair (cdr l))))
+
+(define (accumulate op initial sequence)
+  (cond ((null? sequence) initial)
+        (else (op (car sequence)
+                  (accumulate op initial (cdr sequence))))))
+
+(define (accumulate-n op init seqs)
+  (if (null? (car seqs))
+    '()
+    (cons (accumulate op init (map car seqs))
+          (accumulate-n op init (map cdr seqs)))))
+
+(define (fold-right op initial sequence)
+  (accumulate op initial sequence))
+
+(define (fold-left op initial sequence)
+  (define (iter result rest)
+    (if (null? rest)
+      result
+      (iter (op result (car rest))
+            (cdr rest))))
+  (iter initial sequence))
