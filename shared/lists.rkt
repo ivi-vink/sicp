@@ -2,7 +2,9 @@
 (provide accumulate
          accumulate-n
          fold-right
-         fold-left)
+         fold-left
+         flatmap
+         enumerate-interval)
 (define (append list1 list2)
   (if (null? list1)
     list2
@@ -48,3 +50,21 @@
       (iter (op result (car rest))
             (cdr rest))))
   (iter initial sequence))
+
+(define (flatmap proc seq)
+  (accumulate append '() (map proc seq)))
+
+(define (enumerate-interval j k)
+  (define (iter i interval)
+    (if (< i j)
+      interval
+      (iter (- i 1) (cons i interval))))
+  (iter k '()))
+
+(define (unique-pairs n)
+  (flatmap
+    (lambda (i)
+      (map (lambda (j) (list j i))
+           (enumerate-interval 1 (- i 1))))
+    (enumerate-interval 1 n)))
+
