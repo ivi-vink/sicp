@@ -1,5 +1,6 @@
 #lang racket
 (require sicp-pict)
+(require "../../shared/pict.rkt")
 
 (define wave2 (beside einstein (flip-vert einstein)))
 (define wave4 (below wave2 wave2))
@@ -27,3 +28,11 @@
         (beside (below painter top-left)
                 (below bottom-right corner))))))
 (paint (corner-split einstein 4))
+
+(define (square-limit painter n)
+  (let ((quarter (corner-split painter n)))
+    (let ((half (beside (flip-horiz quarter) quarter)))
+      (below (flip-vert half) half))))
+
+(square-limit einstein 4)
+(paint (square-limit einstein 4))
