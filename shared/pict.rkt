@@ -7,26 +7,25 @@
   sub-vect
   scale-vect
   test-vect
-  make-frame
   origin-frame
   edge1-frame
   edge2-frame
   test-frame
   make-segment
   start-segment
-  end-segment)
+  end-segment
+  paint
+  segments->painter)
 (require sicp-pict)
 (require "lists.rkt")
 
-(define (make-vect x y)
-  (cons x y))
 (define (xcor-vect v)
-  (car v))
+  (vector-xcor v))
 (define (ycor-vect v)
-  (cdr v))
+  (vector-ycor v))
 
 (define (add-vect . v)
-  (make-vect 
+  (make-vect
     (fold-right + 0 (map xcor-vect v))
     (fold-right + 0 (map ycor-vect v))))
 (define (sub-vect . v)
@@ -40,22 +39,18 @@
              (* s (ycor-vect v))))
 (define test-vect (make-vect 1 2))
 
-(define (make-frame origin edge1 edge2)
-  (list origin edge1 edge2))
 (define (origin-frame frame)
-  (car frame))
+  (frame-origin frame))
 (define (edge1-frame frame)
-  (cadr frame))
+  (frame-edge1 frame))
 (define (edge2-frame frame)
-  (caddr frame))
+  (frame-edge2 frame))
 (define test-frame (make-frame
                      (make-vect 1 2)
                      (make-vect 2 4)
                      (make-vect 3 6)))
 
-(define (make-segment start end)
-  (cons start end))
 (define (start-segment s)
-  (car s))
+  (segment-start s))
 (define (end-segment s)
-  (cdr s))
+  (segment-end s))

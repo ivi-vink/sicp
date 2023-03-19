@@ -1,27 +1,27 @@
 #lang racket
-(require "../../shared/lists.rkt")
-
-(define (make-vect x y)
-  (cons x y))
-(define (xcor-vect v)
-  (car v))
-(define (ycor-vect v)
-  (cdr v))
-
-(define (add-vect . v)
-  (make-vect 
-    (fold-right + 0 (map xcor-vect v))
-    (fold-right + 0 (map ycor-vect v))))
-(define (sub-vect . v)
-  (let ((xcors (map xcor-vect v))
-        (ycors (map ycor-vect v)))
-   (make-vect
-     (- (car xcors) (fold-right + 0 (cdr xcors)))
-     (- (car ycors) (fold-right + 0 (cdr ycors))))))
-(define (scale-vect s v)
-  (make-vect (* s (xcor-vect v))
-             (* s (ycor-vect v))))
-
+;; (require "../../shared/lists.rkt")
+;; 
+;; (define (make-vect x y)
+;;   (cons x y))
+;; (define (xcor-vect v)
+;;   (car v))
+;; (define (ycor-vect v)
+;;   (cdr v))
+;; 
+;; (define (add-vect . v)
+;;   (make-vect 
+;;     (fold-right + 0 (map xcor-vect v))
+;;     (fold-right + 0 (map ycor-vect v))))
+;; (define (sub-vect . v)
+;;   (let ((xcors (map xcor-vect v))
+;;         (ycors (map ycor-vect v)))
+;;    (make-vect
+;;      (- (car xcors) (fold-right + 0 (cdr xcors)))
+;;      (- (car ycors) (fold-right + 0 (cdr ycors))))))
+;; (define (scale-vect s v)
+;;   (make-vect (* s (xcor-vect v))
+;;              (* s (ycor-vect v))))
+(require "../../shared/pict.rkt")
 (define test-vec (make-vect 1 2))
 (define test-vec2 (make-vect 3 4))
 ((lambda ()

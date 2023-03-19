@@ -4,7 +4,8 @@
          fold-right
          fold-left
          flatmap
-         enumerate-interval)
+         enumerate-interval
+         enumerate-windows)
 (define (append list1 list2)
   (if (null? list1)
     list2
@@ -68,3 +69,27 @@
            (enumerate-interval 1 (- i 1))))
     (enumerate-interval 1 n)))
 
+(define (enumerate-windows seq n)
+  (define (setup-n-window)
+    (define (rec i things)
+      (if (> i n)
+        (list '() things)
+        (let ((setup (rec (+ i 1)
+                          (cdr things))))
+          (cons (cons (car things) (car setup))
+                (cdr setup)))))
+    (rec 1 seq))
+  (define (shift-window w item)
+    (append (cdr w) (list item)))
+  (define (iter result window things)
+    (if (null? things)
+      (cons window result)
+      (iter (cons window result)
+            (shift-window window (car things))
+            (cdr things))))
+  (let ((setup (setup-n-window)))
+    (iter '() (car setup) (cadr setup))))
+
+(enumerate-windows
+  (enumerate-interval 1 4)
+  2)
