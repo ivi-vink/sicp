@@ -18,7 +18,7 @@
 (define (intersection-set set1 set2)
   (define (iter s1 s2 result)
     (cond ((or (null? s1) (null? s2)) result)
-          ((and 
+          ((and
              (not (element-of-set? (car s1) result))
              (element-of-set? (car s1) s2))
            (iter (cdr s1) s2 (cons (car s1) result)))
