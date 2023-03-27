@@ -6,7 +6,7 @@
   (cond ((null? myset) (cons x '()))
         ((= (car myset) x) myset)
         ((> (car myset) x) (cons x myset))
-        (else (cons (car myset) 
+        (else (cons (car myset)
                     (adjoin-set x (cdr myset))))))
 
 (define test-set (list 1 2 3 4 5 7))

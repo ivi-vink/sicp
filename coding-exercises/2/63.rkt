@@ -13,7 +13,7 @@
          (element-of-set? (right-branch mset)))
         ((< x (entry mset))
          (element-of-set? (left-branch mset)))))
-  
+
 (define (adjoin-set x mset)
   (cond ((null? mset) (make-tree x '() '()))
         ((= x (entry mset)) mset)
@@ -44,37 +44,36 @@
                           (copy-to-list (right-branch tree)
                                         result-list)))))
   (copy-to-list tree '()))
-  
 
 ;; depth of a balanced tree with n elements is log n.. right? Because every level you need 2*(level-1) elements, so the total levels is how many time we can do that step until 2*levels > n.
 ;; So it is the log a where a is the smallest number that only has factor 2 and > n.
-;; Both procedure 1 and 2 are levelwise reducing the problem.
+;; EDIT this is incomplete. Since the recursive call is done multiple times we get a geometric series with base 2 that describes the number of units of work done.
+;; It can be shown that this is O(2n) asymptotically by using the identity for powerseries.
+;; Both procedure 1 and 2 are reducing the problem the same way using tree recursion.
 ;; Only the overhead spent at each level is greater for 1, because append is used in the linear recursive process.
-;; Since at every level we do a linear scan of all left elements, it is n*logn.
-;; 1 is a linear iterative procedure and has almost no overhead at every level except a cons operation so it is logn.
+;; Since at every level we do a linear scan of all left elements, it is a*n*n on average. Where a is a factor that corrects for the fact that we have to scan halve at each depth.
+;; 1 is a linear iterative procedure and has almost no overhead at every level except a cons operation so it is O(n) on average.
 ((lambda ()
-  (define test216a (make-entry 
+  (define test216a (make-entry
                      7
-                     (make-entry 
-                       3
-                       (make-entry
-                         1 '() '())
-                       (make-entry 5 '() '()))
-                      
+                     (make-entry)
+                     9
                      (make-entry
-                       9
-                       '()
+                         3
+                      (make-entry
+                        1 '() '())
+                      (make-entry 5 '() '()
                        (make-entry
                          11
                          '()
-                         '()))))
+                         '())))))
   (println (tree->list-1 test216a))
   (println (tree->list-2 test216a))
   (newline)
-  (define test216b (make-entry 
+  (define test216b (make-entry
                      3
                      (make-entry 1 '() '())
-                     (make-entry 
+                     (make-entry
                        7
                        (make-entry 5 '() '())
                        (make-entry
@@ -87,10 +86,10 @@
   (println (tree->list-1 test216b))
   (println (tree->list-2 test216b))
   (newline)
-  (define test216c (make-entry 
+  (define test216c (make-entry
                      5
                      (make-entry 3 (make-entry 1 '() '()) '())
-                     (make-entry 
+                     (make-entry
                        9
                        (make-entry 7 '() '())
                        (make-entry

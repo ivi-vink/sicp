@@ -1,6 +1,8 @@
 #lang racket
 
 ;; In each branch of the problem we either terminate the process or we reduce the problem to a subproblem with set - (car set)
+;; O(n)
+;; need to iterate like this to prevent duplicates?
 (define (union-set set1 set2)
   (cond ((and (null? set1) (null? set2)) '())
         ((null? set1) (cons (car set2) (union-set set1 (cdr set2))))
@@ -12,4 +14,3 @@
 (define test-list (list 1 2))
 (define test-list2 (list 4 5 6 7))
 (union-set test-list test-list2)
-  
