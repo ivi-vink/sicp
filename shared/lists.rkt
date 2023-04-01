@@ -5,7 +5,8 @@
          fold-left
          flatmap
          enumerate-interval
-         enumerate-windows)
+         enumerate-windows
+         find-first)
 
 (define (append list1 list2)
   (if (null? list1)
@@ -94,3 +95,8 @@
 (enumerate-windows
   (enumerate-interval 1 4)
   2)
+
+(define (find-first pred? seq)
+  (cond ((null? seq) false)
+        ((pred? (car seq)) (car seq))
+        (else (find-first pred? (cdr seq)))))
