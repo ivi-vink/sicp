@@ -1,6 +1,6 @@
 #lang racket
 (define (scale-tree tree factor)
-  (cond ((null? tree) nil)
+  (cond ((null? tree) '())
         ((not (pair? tree)) (* tree factor))
         (else (cons (scale-tree (car tree) factor)
                     (scale-tree (cdr tree) factor)))))
@@ -18,7 +18,7 @@
 ;;     (list)
 ;;     (cons (square (car items)) (square-list (cdr items)))))
 (define (square-tree tree)
-  (cond ((null? tree) nil)
+  (cond ((null? tree) '())
         ((not (pair? tree)) (* tree tree))
         (else (cons (square-tree (car tree))
                     (square-tree (cdr tree))))))
