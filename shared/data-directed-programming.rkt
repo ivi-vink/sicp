@@ -2,6 +2,7 @@
 (provide
   make-apply
   make-dispatch-table
+  printer
   getter
   putter
   attach-tag
@@ -36,6 +37,9 @@
 ;; ('op (list ('(types) item)))
 (define (make-dispatch-table)
   (define dispatch-table '())
+  (define (printer)
+    (newline)
+    (display dispatch-table))
   (define (get op types)
     (let ((op-datum (find-type op dispatch-table)))
       (if op-datum
@@ -67,12 +71,14 @@
                              (attach-tag op
                                 (list (attach-tag types item)))
                              dispatch-table))))
-  (list dispatch-table get put))
+  (list dispatch-table get put printer))
 
 (define (getter t)
   (cadr t))
 (define (putter t)
   (caddr t))
+(define (printer t)
+  (cadddr t))
 
 (define (make-apply put get)
   (lambda (op . args)
