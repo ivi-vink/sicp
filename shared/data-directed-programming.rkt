@@ -15,15 +15,21 @@
 
 ;; Type tagged data
 (define (attach-tag type-tag contents)
-  (cons type-tag contents))
+  (cond ((number? contents) contents)
+        ((symbol? contents) contents)
+        (else (cons type-tag contents))))
 (define (type-tag datum)
-  (if (pair? datum)
-    (car datum)
-    (error "Bad tagged datum -- TYPE-TAG" datum)))
+  (cond
+    ((pair? datum) (car datum))
+    ((number? datum) 'scheme-number)
+    ((symbol? datum) 'symbol)
+    (else (error "Bad tagged datum -- TYPE-TAG" datum))))
 (define (contents datum)
-  (if (pair? datum)
-    (cdr datum)
-    (error "Bad tagged datum -- CONTENTS" datum)))
+  (cond
+    ((pair? datum) (cdr datum))
+    ((number? datum) datum)
+    ((symbol? datum) datum)
+    (else (error "Bad tagged datum -- CONTENTS" datum))))
 
 (define (find-type type seq)
   (define (rec items)
@@ -39,7 +45,7 @@
   (define dispatch-table '())
   (define (printer)
     (newline)
-    (display dispatch-table))
+    (println dispatch-table))
   (define (get op types)
     (let ((op-datum (find-type op dispatch-table)))
       (if op-datum

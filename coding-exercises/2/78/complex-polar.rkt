@@ -1,7 +1,8 @@
 #lang racket
 (provide install-polar-package)
+(require "../../../shared/data-directed-programming.rkt")
 
-(define (install-polar-package)
+(define (install-polar-package put)
   (define (magnitude z)
     (car z))
   (define (angle z)
@@ -21,4 +22,7 @@
   (put 'real-part '(polar) real-part)
   (put 'imag-part '(polar) imag-part)
   (put 'magnitude '(polar) magnitude)
-  (put 'angle '(polar)))
+  (put 'angle '(polar) angle)
+  (put 'make-from-real-imag 'polar (lambda (x y) (typtag (make-from-real-imag x y))))
+  (put 'make-from-mag-ang 'polar (lambda (r a) (typtag (make-from-mag-ang r a))))
+  'done)

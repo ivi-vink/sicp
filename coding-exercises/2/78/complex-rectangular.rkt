@@ -26,4 +26,5 @@
   (put 'make-from-real-imag 'rectangular
        (lambda (x y) (typtag (make-from-real-imag x y))))
   (put 'make-from-mag-ang 'rectangular
-       (lambda (r a) (typtag (make-from-mag-ang r a)))))
+       (lambda (r a) (typtag (make-from-mag-ang r a))))
+  'done)

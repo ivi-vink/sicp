@@ -16,7 +16,6 @@
   in {
     devShell = pkgs.mkShell {
       buildInputs = with pkgs; [
-        mitscheme
         racket
       ];
     };
