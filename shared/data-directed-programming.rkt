@@ -1,5 +1,6 @@
 #lang racket
 (provide
+  make-apply-with-coercion
   make-apply
   make-dispatch-table
   printer
@@ -11,6 +12,15 @@
   find-type)
 (require "./lists.rkt")
 
+(define (make-apply-with-coercion get get-coercion)
+  (lambda (op . args)
+     (let ((type-tags (map type-tag args)))
+       (let ((proc (get op type-tags)))
+         (if proc
+           (apply proc (map contents args))
+           (error
+             "No method for these types -- APPLY-GENERIC"
+             (list op type-tags)))))))
 
 
 ;; Type tagged data
@@ -86,8 +96,9 @@
 (define (printer t)
   (cadddr t))
 
-(define (make-apply put get)
+(define (make-apply get)
   (lambda (op . args)
+     (display args)
      (let ((type-tags (map type-tag args)))
        (let ((proc (get op type-tags)))
          (if proc
@@ -95,3 +106,4 @@
            (error
              "No method for these types -- APPLY-GENERIC"
              (list op type-tags)))))))
+

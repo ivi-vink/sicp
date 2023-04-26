@@ -73,3 +73,4 @@
    (println (=zero? test-num))
    (println (=zero? test-rat))
    (println (=zero? test-complex))))
+
