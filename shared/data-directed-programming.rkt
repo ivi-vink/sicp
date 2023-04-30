@@ -1,6 +1,7 @@
 #lang racket
 (provide
   make-apply-with-coercion
+  make-apply-pred
   make-apply
   make-dispatch-table
   printer
@@ -12,27 +13,20 @@
   find-type)
 (require "./lists.rkt")
 
-(define (make-apply-with-coercion get get-coercion)
-  (lambda (op . args)
-     (let ((type-tags (map type-tag args)))
-       (let ((proc (get op type-tags)))
-         (if proc
-           (apply proc (map contents args))
-           (error
-             "No method for these types -- APPLY-GENERIC"
-             (list op type-tags)))))))
-
-
 ;; Type tagged data
 (define (attach-tag type-tag contents)
-  (cond ((number? contents) contents)
+  (cond ((exact-integer? contents) contents)
+        ((inexact-real? contents) contents)
+        ((number? contents) contents)
         ((symbol? contents) contents)
         (else (cons type-tag contents))))
 (define (type-tag datum)
   (cond
     ((pair? datum) (car datum))
-    ((number? datum) 'scheme-number)
     ((symbol? datum) 'symbol)
+    ((exact-integer? datum) 'integer)
+    ((inexact-real? datum) 'real)
+    ((number? datum) 'scheme-number)
     (else (error "Bad tagged datum -- TYPE-TAG" datum))))
 (define (contents datum)
   (cond
@@ -107,3 +101,52 @@
              "No method for these types -- APPLY-GENERIC"
              (list op type-tags)))))))
 
+(define (make-apply-pred get)
+  (lambda (op . args)
+     (let ((type-tags (map type-tag args)))
+       (let ((proc (get op type-tags)))
+         (if proc
+           (apply proc (map contents args))
+           false)))))
+
+(define (make-apply-with-coercion get get-coercion)
+  (define (make-apply get)
+    (lambda (op . args)
+       ;; (display args)
+       (let ((type-tags (map type-tag args)))
+         (let ((proc (get op type-tags)))
+           (if proc
+             (apply proc (map contents args))
+             false)))))
+  (define apply-generic (make-apply get))
+
+  ;; try to coerce all arguments to a type
+  (define (coerce-or-fail t args)
+    (define (iter coerced remaining-args)
+      (cond ((null? remaining-args) coerced)
+            ((equal? t (type-tag (car remaining-args)))
+             (append coerced (car remaining-args)))
+            (else (let ((t->arg (get-coercion t (type-tag (car remaining-args)))))
+                   (if t->arg
+                     (append coerced (t->arg t))
+                     false)))))
+    (iter '() args))
+
+  ;; try to coerce all arguments to the type of one them
+  (define (try-coerce type-tags op args)
+    (define (iter havent-tried)
+      (if (null? havent-tried)
+        (error "no method for these types --" (list op type-tags))
+        (let ((coerced-args (coerce-or-fail (type-tag (car havent-tried)) args)))
+          (if coerced-args
+            (apply apply-generic (cons op coerced-args))
+            (iter (cdr havent-tried))))))
+    (iter type-tags))
+
+  (lambda (op . args)
+     ;; (display args)
+     (let ((type-tags (map type-tag args)))
+       (let ((proc (get op type-tags)))
+         (if proc
+             (apply proc (map contents args))
+             (try-coerce type-tags op args))))))
