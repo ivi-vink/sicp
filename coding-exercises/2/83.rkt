@@ -277,3 +277,9 @@
 (apply-and-drop 'add
                 1.0
                 (make-complex 1 0))
+
+;; 86
+;; Selectors and constructors of complex numbers packages need to become generic
+;; We can try to raise to real numbers before passing it to the trig functions, but we need to do this for every possible type in the system.
+;; So it is better to let the types themselves define trig functions
+(apply-generic 'angle (make-complex 1 test-rat))
