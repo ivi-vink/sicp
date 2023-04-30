@@ -64,8 +64,8 @@
     (make-rat (* (numer x) (denom y))
               (* (denom x) (numer y))))
   (define (equ? x y)
-    (and (equal? (numer x) (numer y))
-         (equal? (denom x) (denom y))))
+    (and (= (numer x) (numer y))
+         (= (denom x) (denom y))))
   (define (=zero? x)
     (equal? (numer x) 0))
 
@@ -95,6 +95,8 @@
   (put 'div '(rational rational)
        (lambda (x y) (tagme (div-rat x y))))
   (put 'raise '(rational) raiseme)
+  (put 'project '(rational) (lambda (rat)
+                              ((get 'make 'integer) (/ (numer rat) (denom rat)))))
 
   ;; predicates
   (put 'equ? '(rational rational)
@@ -120,6 +122,8 @@
   (put 'mul '(real real) (lambda (x y) (tagme (make (* x y)))))
   (put 'div '(real real) (lambda (x y) (tagme (make (/ x y)))))
   (put 'raise '(real) raiseme)
+  (put 'project '(real) (lambda (n)
+                          ((get 'make 'rational) (round n) 1)))
   ;; predicates
   (put 'equ? '(real real) (lambda (x y) (= x y)))
   (put '=zero? '(real) (lambda (x) (= 0 x)))
@@ -131,6 +135,8 @@
 (install-real put get)
 ;; use from previous exercise
 (install-complex-package apply-generic get put)
+(put 'project '(complex) (lambda (z)
+                           ((get 'make 'real) (apply-generic 'real-part z))))
 
 ;; test running
 ;; integer
@@ -141,7 +147,7 @@
 ;; rational
 (define (make-rat n d)
   ((get 'make 'rational) n d))
-(define test-rat (make-rat 1 2))
+(define test-rat (make-rat 5 2))
 
 ;; real
 (define (make-real n)
@@ -240,4 +246,34 @@
 ;; 85
 ;; lowerable?
 (define (project datum)
-  datum)
+  (apply-generic 'project datum))
+(project test-complex)
+(project 1.5)
+(project test-rat)
+(define (equ? d1 d2)
+  (apply-generic 'equ? d1 d2))
+
+(define (can-drop? datum)
+  (equ? (raisetower (project datum))
+        datum))
+(define (towerdrop datum)
+  (cond ((and (get 'project (list (type-tag datum)))
+              (can-drop? datum))
+         (towerdrop (project datum)))
+        (else datum)))
+(towerdrop (make-complex 1 1))
+
+(define (make-apply-with-raising-and-drop apply-generic get)
+  (lambda (op . args)
+    (let ((result (apply apply-generic (cons op args))))
+      (if result
+        (towerdrop result)
+        (let ((raised-args (raise-until-type-match apply-generic (highest-type apply-generic args) args)))
+          (let ((raised-result (apply apply-generic (cons op raised-args))))
+            (if raised-result
+               (towerdrop raised-result)
+               (error "Could not apply --" (list op args raised-args)))))))))
+(define apply-and-drop (make-apply-with-raising-and-drop (make-apply-pred get) get))
+(apply-and-drop 'add
+                1.0
+                (make-complex 1 0))

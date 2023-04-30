@@ -92,7 +92,6 @@
 
 (define (make-apply get)
   (lambda (op . args)
-     (display args)
      (let ((type-tags (map type-tag args)))
        (let ((proc (get op type-tags)))
          (if proc
