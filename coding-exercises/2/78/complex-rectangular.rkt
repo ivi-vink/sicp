@@ -3,14 +3,14 @@
 (require "../../../shared/data-directed-programming.rkt")
 
 
-(define (install-rectangular-package put)
+(define (install-rectangular-package apply-generic put)
   (define (real-part z) (car z))
   (define (imag-part z) (cdr z))
   (define (make-from-real-imag x y) (cons x y))
-  (define (magnitude z) (sqrt (+ (sqr (real-part z))
-                                 (sqr (real-part z)))))
+  (define (magnitude z) (apply-generic 'sqrt (+ (apply-generic 'sqr (real-part z))
+                                                (apply-generic 'sqr (real-part z)))))
   (define (angle z)
-    (atan (imag-part z)
+    (apply-generic 'atan (imag-part z)
           (real-part z)))
   (define (make-from-mag-ang r a)
     (cons (* r (cos a))

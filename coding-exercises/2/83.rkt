@@ -38,6 +38,12 @@
   (put 'mul '(integer integer) (lambda (x y) (tagme (make (* x y)))))
   (put 'div '(integer integer) (lambda (x y) (tagme (make (/ x y)))))
   (put 'raise '(integer) raiseme)
+  ;; sqrt and trig methods for complex nums
+  (put 'sqr '(integer) sqr)
+  (put 'sqrt '(integer) sqrt)
+  (put 'atan '(integer) atan)
+  (put 'cos  '(integer) cos)
+  (put 'sin '(integer) sin)
   ;; predicates
   (put 'equ? '(integer integer) (lambda (x y) (= x y)))
   (put '=zero? '(integer) (lambda (x) (= 0 x)))
@@ -97,6 +103,12 @@
   (put 'raise '(rational) raiseme)
   (put 'project '(rational) (lambda (rat)
                               ((get 'make 'integer) (/ (numer rat) (denom rat)))))
+  ;; sqrt and trig methods for complex nums
+  (put 'sqr '(rational) (lambda (r) (sqr (raiseme r))))
+  (put 'sqrt '(rational) (lambda (r) (sqrt (raiseme r))))
+  (put 'cos  '(rational) (lambda (r) (cos (raiseme r))))
+  (put 'sin '(rational) (lambda (r) (sin (raiseme r))))
+  (put 'atan '(rational rational) (lambda (r1 r2) (atan (raiseme r1) (raiseme r2))))
 
   ;; predicates
   (put 'equ? '(rational rational)
@@ -124,6 +136,12 @@
   (put 'raise '(real) raiseme)
   (put 'project '(real) (lambda (n)
                           ((get 'make 'rational) (round n) 1)))
+  ;; sqrt and trig methods for complex nums
+  (put 'sqr '(real) sqr)
+  (put 'sqrt '(real) sqrt)
+  (put 'cos  '(real) cos)
+  (put 'sin '(real) sin)
+  (put 'atan '(real real) (lambda (x y) (atan x y)))
   ;; predicates
   (put 'equ? '(real real) (lambda (x y) (= x y)))
   (put '=zero? '(real) (lambda (x) (= 0 x)))
@@ -157,7 +175,13 @@
 ;; complex
 (define (make-complex x y)
   ((get 'make-from-real-imag 'complex) x y))
+(define (make-complex-rect x y)
+  ((get 'make-from-real-imag 'complex) x y))
+(define (make-complex-polar x y)
+  ((get 'make-from-mag-ang 'complex) x y))
 (define test-complex (make-complex 1 2))
+(define test-complex-rect (make-complex-rect 1 2))
+(define test-complex-polar (make-complex-rect 1 2))
 
 (define (raisetower datum)
   (apply-coercion 'raise datum))
@@ -273,13 +297,41 @@
             (if raised-result
                (towerdrop raised-result)
                (error "Could not apply --" (list op args raised-args)))))))))
-(define apply-and-drop (make-apply-with-raising-and-drop (make-apply-pred get) get))
-(apply-and-drop 'add
+(define apply-and-drop-test (make-apply-with-raising-and-drop (make-apply-pred get) get))
+(apply-and-drop-test 'add
                 1.0
                 (make-complex 1 0))
 
 ;; 86
+;; new package
+(define generic-pkg (make-dispatch-table))
+(define generic-put (putter generic-pkg))
+(define generic-get (getter generic-pkg))
+(define apply-and-drop (make-apply-with-raising-and-drop (make-apply-pred generic-get) generic-get))
+(install-integer generic-put generic-get)
+(install-rational generic-put generic-get)
+(install-real generic-put generic-get)
+(install-complex-package apply-and-drop generic-get generic-put)
+(generic-put 'project '(complex) (lambda (z)
+                                   ((generic-get 'make 'real) (apply-and-drop 'real-part z))))
 ;; Selectors and constructors of complex numbers packages need to become generic
 ;; We can try to raise to real numbers before passing it to the trig functions, but we need to do this for every possible type in the system.
 ;; So it is better to let the types themselves define trig functions
-(apply-generic 'angle (make-complex 1 test-rat))
+;;
+;; Rectangular complex numbers:
+;;   1. Make from mag angle uses cos and sin (not used by complex package however, since we always store make-from-mag-angle as polar?)
+;;   2. Angle uses atan
+;;   3. Magnitude uses sqr sqrt
+;; Polar complex numbers:
+;;   1. make from real imag uses sqr sqrt and atan (not used by complex package however, since we always store make-from-real-imag as rectangular?)
+;;   2. Selectors use sine and cos
+;;
+;;   So at these for points we can try to raise to real numbers, but then it doesn't work
+;;   for all numbers we potentially want to add to the system.
+;;   So we are going to add these generic operations to the complex package.
+;;   NOTE(mike): mixed types are not supported in my system, but they could be if we use the raising apply generic probably!
+;;               for example we can mul a real and rational with the raising applier
+(apply-and-drop 'angle (make-complex-rect test-rat test-rat))
+(apply-and-drop 'magnitude (make-complex-rect test-rat test-rat))
+(apply-and-drop 'real-part (make-complex-polar test-rat test-rat))
+(apply-and-drop 'imag-part (make-complex-polar test-rat test-rat))

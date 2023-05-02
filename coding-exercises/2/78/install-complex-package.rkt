@@ -7,8 +7,8 @@
 
 (define (install-complex-package apply-generic get put)
   ;; install and import methods
-  (install-rectangular-package put)
-  (install-polar-package put)
+  (install-rectangular-package apply-generic put)
+  (install-polar-package apply-generic put)
   (define (make-from-real-imag x y)
     ((get 'make-from-real-imag 'rectangular) x y))
   (define (make-from-mag-ang r a)
