@@ -331,6 +331,7 @@
 ;;   So we are going to add these generic operations to the complex package.
 ;;   NOTE(mike): mixed types are not supported in my system, but they could be if we use the raising apply generic probably!
 ;;               for example we can mul a real and rational with the raising applier
+;;              in a tower of types you could also define some methods only for types where other types can be raised to, but this puts the burden on the type hierarchy.
 (apply-and-drop 'angle (make-complex-rect test-rat test-rat))
 (apply-and-drop 'magnitude (make-complex-rect test-rat test-rat))
 (apply-and-drop 'real-part (make-complex-polar test-rat test-rat))

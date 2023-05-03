@@ -1,5 +1,6 @@
 #lang racket
 (provide
+  make-apply-with-raising-and-drop
   make-apply-with-coercion
   make-apply-pred
   make-apply
@@ -149,3 +150,91 @@
          (if proc
              (apply proc (map contents args))
              (try-coerce type-tags op args))))))
+
+;; Generic apply that can raise and drop methods in a tower of types
+(define (type-match? args)
+  (not (find-first (lambda (x)
+                     (not (equal? (type-tag x)
+                                  (type-tag (car args)))))
+                   args)))
+(define (count-raises-until-top apply-pred datum)
+  (define (iter i raised)
+    (let ((result (apply-pred 'raise raised)))
+      (if result
+        (iter (+ i 1) result)
+        i)))
+  (iter 0 datum))
+
+(define (highest-type apply-pred items)
+  (cdr
+    (foldl
+     (lambda (raises item result)
+       (cond ((< (car result) 0) (cons raises item))
+             ((< raises (car result)) (cons raises item))
+             (else result)))
+     (cons -1 'nil)
+     (map (lambda (x)
+            (count-raises-until-top apply-pred x))
+          items)
+     (map type-tag items))))
+
+(define (raise-until apply-pred type datum)
+  (cond ((equal? type (type-tag datum)) datum)
+        (else (let ((result (apply-pred 'raise datum)))
+                (if result
+                  (raise-until apply-pred type result)
+                  false)))))
+
+(define (raise-until-type-match apply-pred type items)
+  (cond ((null? items) '())
+        (else (let ((result (raise-until apply-pred type (car items))))
+                (if result
+                  (cons result (raise-until-type-match apply-pred type (cdr items)))
+                  (error "Could not raise type --" (list type items)))))))
+
+; (raise-until-type-match (make-apply-pred get)
+;                         (highest-type (make-apply-pred get) (list 1 test-complex))
+;                         (list 1 test-complex)))))))
+
+
+(define (make-apply-with-raising apply-generic get)
+  (lambda (op . args)
+    (let ((result (apply apply-generic (cons op args))))
+      (if result
+        result
+        (let ((raised-args (raise-until-type-match apply-generic (highest-type apply-generic args) args)))
+          (let ((raised-result (apply apply-generic (cons op raised-args))))
+            (if raised-result
+               raised-result
+               (error "Could not apply --" (list op args raised-args)))))))))
+
+(define (make-apply-with-raising-and-drop get)
+  (define apply-pred (make-apply-pred get))
+
+  (define (raisetower datum)
+    (apply-pred 'raise datum))
+
+  (define (project datum)
+    (apply-pred 'project datum))
+
+  (define (equ? d1 d2)
+    (apply-pred 'equ? d1 d2))
+
+  (define (can-drop? datum)
+    (equ? (raisetower (project datum))
+          datum))
+  (define (towerdrop datum)
+    (cond ((and (get 'project (list (type-tag datum)))
+                (can-drop? datum))
+           (towerdrop (project datum)))
+          (else datum)))
+
+  (lambda (op . args)
+    (let ((result (apply apply-pred (cons op args))))
+      (if result
+        (towerdrop result)
+        (let ((raised-args (raise-until-type-match apply-pred (highest-type apply-pred args) args)))
+          (let ((raised-result (apply apply-pred (cons op raised-args))))
+            (if raised-result
+               (towerdrop raised-result)
+               (error "Could not apply --" (list op args raised-args)))))))))
