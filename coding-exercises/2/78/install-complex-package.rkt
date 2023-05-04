@@ -42,7 +42,7 @@
     (and (= (real-part z1) (real-part z2))
          (= (imag-part z1) (imag-part z2))))
   (define (=zero? z)
-    (and (= (real-part z)) (= (imag-part z))))
+    (and (= (real-part z) 0) (= (imag-part z) 0)))
 
   ;; interface
   (define (typetag z) (attach-tag 'complex z))

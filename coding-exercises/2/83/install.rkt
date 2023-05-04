@@ -11,7 +11,21 @@
          make-complex-rect
          test-complex-rect
          make-complex-polar
-         test-complex-polar)
+         test-complex-polar
+         =zero?
+         equ?
+         add
+         sub
+         mul
+         div
+         sinme
+         cosme
+         atanme
+         sqrme
+         sqrtme
+         raiseme
+         dropme)
+
 (require "./install-integer.rkt"
          "./install-rational.rkt"
          "./install-real.rkt"
@@ -34,7 +48,7 @@
 (define (install-arithmetic-package)
   (list get put apply-fn))
 
-;; test running
+;; constructors
 ;; integer
 (define (make-integer n)
   ((get 'make 'integer) n))
@@ -60,3 +74,35 @@
 (define test-complex (make-complex 1 2))
 (define test-complex-rect (make-complex-rect 1 2))
 (define test-complex-polar (make-complex-rect 1 2))
+
+;; polynomial
+(define (make-polynomial var terms)
+  ((get 'make 'polynomial) var terms))
+
+;; generic methods
+(define (equ? a1 a2)
+  (apply-fn 'equ? a2))
+(define (=zero? datum)
+  (apply-fn '=zero? datum))
+(define (add a1 a2)
+  (apply-fn 'add a1 a2))
+(define (sub a1 a2)
+  (apply-fn 'sub a1 a2))
+(define (mul a1 a2)
+  (apply-fn 'mul a1 a2))
+(define (div a1 a2)
+  (apply-fn 'div a1 a2))
+(define (raiseme datum)
+  (apply-fn 'raise datum))
+(define (dropme datum)
+  (apply-fn 'project datum))
+(define (sqrme datum)
+  (apply-fn 'sqr datum))
+(define (sqrtme datum)
+  (apply-fn 'sqrt datum))
+(define (cosme datum)
+  (apply-fn 'cos datum))
+(define (sinme datum)
+  (apply-fn 'sin datum))
+(define (atanme a1 a2)
+  (apply-fn 'atan a2))

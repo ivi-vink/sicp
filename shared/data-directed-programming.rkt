@@ -28,6 +28,7 @@
     ((exact-integer? datum) 'integer)
     ((inexact-real? datum) 'real)
     ((number? datum) 'scheme-number)
+    ((boolean? datum) 'boolean)
     (else (error "Bad tagged datum -- TYPE-TAG" datum))))
 (define (contents datum)
   (cond
@@ -109,6 +110,14 @@
            (apply proc (map contents args))
            false)))))
 
+(define (make-apply-pred-symbol get)
+  (lambda (op . args)
+     (let ((type-tags (map type-tag args)))
+       (let ((proc (get op type-tags)))
+         (if proc
+           (apply proc (map contents args))
+           false)))))
+
 (define (make-apply-with-coercion get get-coercion)
   (define (make-apply get)
     (lambda (op . args)
@@ -157,15 +166,15 @@
                      (not (equal? (type-tag x)
                                   (type-tag (car args)))))
                    args)))
-(define (count-raises-until-top apply-pred datum)
+(define (count-raises-until-top get datum)
   (define (iter i raised)
-    (let ((result (apply-pred 'raise raised)))
-      (if result
-        (iter (+ i 1) result)
+    (let ((proc (get 'raise (list (type-tag raised)))))
+      (if proc
+        (iter (+ i 1) (proc (contents raised)))
         i)))
   (iter 0 datum))
 
-(define (highest-type apply-pred items)
+(define (highest-type get items)
   (cdr
     (foldl
      (lambda (raises item result)
@@ -174,22 +183,22 @@
              (else result)))
      (cons -1 'nil)
      (map (lambda (x)
-            (count-raises-until-top apply-pred x))
+            (count-raises-until-top get x))
           items)
      (map type-tag items))))
 
-(define (raise-until apply-pred type datum)
+(define (raise-until get type datum)
   (cond ((equal? type (type-tag datum)) datum)
-        (else (let ((result (apply-pred 'raise datum)))
-                (if result
-                  (raise-until apply-pred type result)
+        (else (let ((proc (get 'raise (list (type-tag datum)))))
+                (if proc
+                  (raise-until get type (proc (contents datum)))
                   false)))))
 
-(define (raise-until-type-match apply-pred type items)
+(define (raise-until-type-match get type items)
   (cond ((null? items) '())
-        (else (let ((result (raise-until apply-pred type (car items))))
+        (else (let ((result (raise-until get type (car items))))
                 (if result
-                  (cons result (raise-until-type-match apply-pred type (cdr items)))
+                  (cons result (raise-until-type-match get type (cdr items)))
                   (error "Could not raise type --" (list type items)))))))
 
 ; (raise-until-type-match (make-apply-pred get)
@@ -202,15 +211,14 @@
     (let ((result (apply apply-generic (cons op args))))
       (if result
         result
-        (let ((raised-args (raise-until-type-match apply-generic (highest-type apply-generic args) args)))
+        (let ((raised-args (raise-until-type-match get (highest-type get args) args)))
           (let ((raised-result (apply apply-generic (cons op raised-args))))
             (if raised-result
                raised-result
                (error "Could not apply --" (list op args raised-args)))))))))
 
 (define (make-apply-with-raising-and-drop get)
-  (define apply-pred (make-apply-pred get))
-
+  (define apply-pred (make-apply get))
   (define (raisetower datum)
     (apply-pred 'raise datum))
 
@@ -223,6 +231,7 @@
   (define (can-drop? datum)
     (equ? (raisetower (project datum))
           datum))
+
   (define (towerdrop datum)
     (cond ((and (get 'project (list (type-tag datum)))
                 (can-drop? datum))
@@ -230,11 +239,11 @@
           (else datum)))
 
   (lambda (op . args)
-    (let ((result (apply apply-pred (cons op args))))
-      (if result
-        (towerdrop result)
-        (let ((raised-args (raise-until-type-match apply-pred (highest-type apply-pred args) args)))
-          (let ((raised-result (apply apply-pred (cons op raised-args))))
-            (if raised-result
-               (towerdrop raised-result)
+    (let ((proc (get op (map type-tag args))))
+      (if proc
+        (towerdrop (apply proc (map contents args)))
+        (let ((raised-args (raise-until-type-match get (highest-type get args) args)))
+          (let ((raised-proc (get op (map type-tag raised-args))))
+            (if raised-proc
+               (towerdrop (apply raised-proc (map contents raised-args)))
                (error "Could not apply --" (list op args raised-args)))))))))
