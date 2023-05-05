@@ -46,6 +46,8 @@
   ;; interface
   (put 'add '(rational rational)
        (lambda (x y) (tagme (add-rat x y))))
+  (put 'neg '(rational)
+       (lambda (rat) (tagme (neg-rat rat))))
   (put 'sub '(rational rational)
        (lambda (x y) (tagme (sub-rat x y))))
   (put 'mul '(rational rational)

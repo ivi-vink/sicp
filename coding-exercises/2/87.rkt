@@ -64,6 +64,17 @@
                             (term-list p2)))
       (error "Polys not in same var -- ADD-POLY" (list p1 p2))))
 
+  (define (neg-poly poly)
+    (make-poly
+      (variable poly)
+      (map (lambda (term)
+             (make-term
+               (order term)
+               (apply-fn 'neg (coeff term))))
+           (term-list poly))))
+  (define (sub-poly p1 p2)
+    (add-poly p1 (neg-poly p2)))
+
   (define (mul-term-by-all-terms t1 L)
     (if (empty-termlist? L)
       (the-empty-termlist)
@@ -84,8 +95,17 @@
                  (mul-terms (term-list p1)
                             (term-list p2)))
       (error "Polys not in same var -- MUL-POLY" (list p1 p2))))
+  (define (polynomial-=zero? poly)
+    (define (rec term-list)
+      (cond ((empty-termlist? term-list) true)
+            ((not (apply-fn '=zero? (coeff (first-term term-list)))) false)
+            (else (rec (rest-terms term-list)))))
+    (rec (term-list poly)))
+  (put '=zero? '(polynomial) polynomial-=zero?)
   ;;interface
   (put 'add '(polynomial polynomial) (lambda (p1 p2) (tagme (add-poly p1 p2))))
+  (put 'neg '(polynomial) (lambda (p) (tagme (neg-poly p))))
+  (put 'sub '(polynomial polynomial) (lambda (p1 p2) (tagme (sub-poly p1 p2))))
   (put 'mul '(polynomial polynomial) (lambda (p1 p2) (tagme (mul-poly p1 p2))))
   (put 'make 'polynomial
        (lambda (var terms) (tagme (make-poly var terms))))
@@ -101,6 +121,26 @@
                                          (list 3 test-real)
                                          (list 1 test-rat)
                                          (list 0 test-integer))))
+(define test-poly3 (make-polynomial 'x (list
+                                         (list 1 2)
+                                         (list 0 2))))
 ((lambda ()
    (newline)
-   (display (add test-poly2 test-poly2))))
+   (display (add test-poly2 test-poly2))
+   (newline)
+   (display (mul test-poly2 test-poly2))
+   (newline)
+   (display (mul test-poly3 test-poly3))))
+
+;;87
+(=zero? test-poly3)
+(=zero? (make-polynomial 'x (list (list 1000 0))))
+
+;; 88
+;; what is meant with negation here? Negation of a number? Making a negative number?
+;; Guess that would be handy if we need to subtract a lot of terms.
+((lambda ()
+   (newline)
+   (display (sub test-poly1 test-poly3))
+   (newline)
+   (display (sub test-poly1 test-poly2))))

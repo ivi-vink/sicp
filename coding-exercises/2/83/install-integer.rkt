@@ -16,6 +16,7 @@
   (put 'make 'integer (lambda (x) (tagme (make x))))
   ;; methods
   (put 'add '(integer integer) (lambda (x y) (tagme (make (+ x y)))))
+  (put 'neg '(integer) (lambda (x) (tagme (- x))))
   (put 'sub '(integer integer) (lambda (x y) (tagme (make (- x y)))))
   (put 'mul '(integer integer) (lambda (x y) (tagme (make (* x y)))))
   (put 'div '(integer integer) (lambda (x y) (tagme (make (/ x y)))))
@@ -23,7 +24,7 @@
   ;; sqrt and trig methods for complex nums
   (put 'sqr '(integer) sqr)
   (put 'sqrt '(integer) sqrt)
-  (put 'atan '(integer) atan)
+  (put 'atan '(integer integer) atan)
   (put 'cos  '(integer) cos)
   (put 'sin '(integer) sin)
   ;; predicates

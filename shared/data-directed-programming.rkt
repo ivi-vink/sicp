@@ -246,4 +246,4 @@
           (let ((raised-proc (get op (map type-tag raised-args))))
             (if raised-proc
                (towerdrop (apply raised-proc (map contents raised-args)))
-               (error "Could not apply --" (list op args raised-args)))))))))
+               (error "Could not apply --" (list op raised-args)))))))))
