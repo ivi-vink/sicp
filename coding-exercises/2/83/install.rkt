@@ -12,6 +12,13 @@
          test-complex-rect
          make-complex-polar
          test-complex-polar
+         term
+         dense-termlist
+         sparse-termlist
+         make-polynomial
+         test-poly1
+         test-poly2
+         test-poly3
          =zero?
          equ?
          add
@@ -30,6 +37,7 @@
          "./install-rational.rkt"
          "./install-real.rkt"
          "./install-complex.rkt"
+         "./polynomials.rkt"
          "../../../shared/data-directed-programming.rkt")
 
 
@@ -44,6 +52,7 @@
 (install-rational put get)
 (install-real put get)
 (install-complex apply-fn get put)
+(install-polynomial get put apply-fn)
 
 (define (install-arithmetic-package)
   (list get put apply-fn))
@@ -77,8 +86,24 @@
                                                (apply-fn 'angle test-complex)))
 
 ;; polynomial
+(define (term order coeff)
+  ((get 'make-from-order-coeff 'term) order coeff))
+(define (sparse-termlist . terms)
+  ((get 'make-from-terms 'sparse-termlist) terms))
+(define (dense-termlist . terms)
+  ((get 'make-from-terms 'dense-termlist) terms))
 (define (make-polynomial var terms)
   ((get 'make 'polynomial) var terms))
+(define test-poly1 (make-polynomial 'x (sparse-termlist
+                                         (term 1 test-integer))))
+(define test-poly2 (make-polynomial 'x (sparse-termlist
+                                         (term 100 test-complex)
+                                         (term 2 test-real)
+                                         (term 1 test-rat)
+                                         (term 0 test-integer))))
+(define test-poly3 (make-polynomial 'x (sparse-termlist
+                                         (term 50 test-rat)
+                                         (term 0 2))))
 
 ;; generic methods
 (define (equ? a1 a2)
