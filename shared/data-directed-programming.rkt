@@ -121,7 +121,6 @@
 (define (make-apply-with-coercion get get-coercion)
   (define (make-apply get)
     (lambda (op . args)
-       ;; (display args)
        (let ((type-tags (map type-tag args)))
          (let ((proc (get op type-tags)))
            (if proc
@@ -153,7 +152,6 @@
     (iter type-tags))
 
   (lambda (op . args)
-     ;; (display args)
      (let ((type-tags (map type-tag args)))
        (let ((proc (get op type-tags)))
          (if proc
@@ -229,11 +227,15 @@
   (define (equ? d1 d2)
     (local-apply 'equ? d1 d2))
 
+  (define (raisable? datum)
+    (get 'raise (list (type-tag datum))))
   (define (can-drop? datum)
     (let ((dropped (project datum)))
-      (let ((raised (raisetower dropped)))
-        (and (get 'equ? (list (type-tag raised) (type-tag datum)))
-             (equ? raised datum)))))
+      (if (raisable? dropped)
+        (let ((raised (raisetower dropped)))
+          (and (get 'equ? (list (type-tag raised) (type-tag datum)))
+               (equ? raised datum)))
+        false)))
 
   (define (projectable? datum)
     (get 'project (list (type-tag datum))))
@@ -249,9 +251,6 @@
       (if proc
         (towerdrop (apply proc (map contents args)))
         (let ((raised-args (raise-until-type-match get (highest-type get args) args)))
-          (newline)
-          (display (list "RAISED -- " raised-args))
-          (newline)
           (let ((raised-proc (get op (map type-tag raised-args))))
             (if raised-proc
                (towerdrop (apply raised-proc (map contents raised-args)))

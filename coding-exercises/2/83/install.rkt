@@ -11,14 +11,14 @@
          make-complex-rect
          test-complex-rect
          make-complex-polar
-         ;test-complex-polar
+         test-complex-polar
          term
          dense-termlist
          sparse-termlist
          make-polynomial
-         ; test-poly1
-         ; test-poly2
-         ; test-poly3
+         test-poly1
+         test-poly2
+         test-poly3
          =zero?
          equ?
          add
@@ -82,8 +82,7 @@
   ((get 'make-from-mag-ang 'complex) x y))
 (define test-complex (make-complex 1 2))
 (define test-complex-rect (make-complex-rect 1 2))
-(display (apply-fn 'magnitude test-complex))
-;; (define test-complex-polar (make-complex-polar (apply-fn 'magnitude test-complex) (apply-fn 'angle test-complex)))
+(define test-complex-polar (make-complex-polar (apply-fn 'magnitude test-complex) (apply-fn 'angle test-complex)))
 
 ;; polynomial
 (define (term order coeff)
@@ -94,16 +93,16 @@
   ((get 'make-from-terms 'dense-termlist) terms))
 (define (make-polynomial var terms)
   ((get 'make 'polynomial) var terms))
-; (define test-poly1 (make-polynomial 'x (sparse-termlist
-;                                          (term 1 test-integer)))
-; (define test-poly2 (make-polynomial 'x (sparse-termlist
-;                                          (term 100 test-complex)
-;                                          (term 2 test-real)
-;                                          (term 1 test-rat)
-;                                          (term 0 test-integer))))
-; (define test-poly3 (make-polynomial 'x (sparse-termlist
-;                                          (term 50 test-rat)
-;                                          (term 0 2))))
+(define test-poly1 (make-polynomial 'x (sparse-termlist
+                                         (term 1 test-integer))))
+(define test-poly2 (make-polynomial 'x (sparse-termlist
+                                         (term 100 test-complex)
+                                         (term 2 test-real)
+                                         (term 1 test-rat)
+                                         (term 0 test-integer))))
+(define test-poly3 (make-polynomial 'x (sparse-termlist
+                                         (term 50 test-rat)
+                                         (term 0 2))))
 
 ;; generic methods
 (define (equ? a1 a2)
