@@ -69,8 +69,20 @@
     (let ((g (gcd n d)))
       (cons (sign (/ n g)) (abs (/ d g)))))
 
+  (define (dropme rat)
+    (display (list (numer rat) (denom rat)))
+    (display (list (integer? (numer rat)) (integer? (denom rat))))
+    (if (and (integer? (numer rat))
+             (integer? (denom rat)))
+      ((get 'make 'integer) (/ (numer rat) (denom rat)))
+      (list 'undefined)))
   (define (raiseme rat)
-    ((get 'make 'real) (/ (numer rat) (denom rat))))
+    (display (list (numer rat) (denom rat)))
+    (display (list (integer? (numer rat)) (integer? (denom rat))))
+    (if (and (integer? (numer rat))
+             (integer? (denom rat)))
+      ((get 'make 'real) (/ (numer rat) (denom rat)))
+      (list 'undefined)))
 
   ;; constructor
   (put 'make 'rational
@@ -89,8 +101,7 @@
   (put 'div '(rational rational)
        (lambda (x y) (tagme (div-rat x y))))
   (put 'raise '(rational) raiseme)
-  (put 'project '(rational) (lambda (rat)
-                              ((get 'make 'integer) (/ (numer rat) (denom rat)))))
+  (put 'project '(rational) dropme)
   ;; sqrt and trig methods for complex nums
   (put 'sqr '(rational) (lambda (r) (sqr (raiseme r))))
   (put 'sqrt '(rational) (lambda (r) (sqrt (raiseme r))))

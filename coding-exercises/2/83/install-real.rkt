@@ -24,7 +24,7 @@
   (put 'div '(real real) (lambda (x y) (tagme (make (/ x y)))))
   (put 'raise '(real) raiseme)
   (put 'project '(real) (lambda (n)
-                          ((get 'make 'rational) (round n) 1)))
+                          ((get 'make 'rational) n 1.0)))
   ;; sqrt and trig methods for complex nums
   (put 'sqr '(real) sqr)
   (put 'sqrt '(real) sqrt)

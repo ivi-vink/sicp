@@ -218,31 +218,40 @@
                (error "Could not apply --" (list op args raised-args)))))))))
 
 (define (make-apply-with-raising-and-drop get)
-  (define apply-pred (make-apply get))
+  (define local-apply (make-apply get))
+
   (define (raisetower datum)
-    (apply-pred 'raise datum))
+    (local-apply 'raise datum))
 
   (define (project datum)
-    (apply-pred 'project datum))
+    (local-apply 'project datum))
 
   (define (equ? d1 d2)
-    (apply-pred 'equ? d1 d2))
+    (local-apply 'equ? d1 d2))
 
   (define (can-drop? datum)
-    (equ? (raisetower (project datum))
-          datum))
+    (let ((dropped (project datum)))
+      (let ((raised (raisetower dropped)))
+        (and (get 'equ? (list (type-tag raised) (type-tag datum)))
+             (equ? raised datum)))))
 
+  (define (projectable? datum)
+    (get 'project (list (type-tag datum))))
   (define (towerdrop datum)
-    (cond ((and (get 'project (list (type-tag datum)))
-                (can-drop? datum))
-           (towerdrop (project datum)))
-          (else datum)))
+    (if (projectable? datum)
+      (cond ((can-drop? datum)
+             (towerdrop (project datum)))
+            (else datum))
+      datum))
 
   (lambda (op . args)
     (let ((proc (get op (map type-tag args))))
       (if proc
         (towerdrop (apply proc (map contents args)))
         (let ((raised-args (raise-until-type-match get (highest-type get args) args)))
+          (newline)
+          (display (list "RAISED -- " raised-args))
+          (newline)
           (let ((raised-proc (get op (map type-tag raised-args))))
             (if raised-proc
                (towerdrop (apply raised-proc (map contents raised-args)))
