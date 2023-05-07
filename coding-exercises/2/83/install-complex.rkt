@@ -153,12 +153,6 @@
     (make-from-mag-ang (mul (magnitude z1) (magnitude z2))
                        (add (angle z1) (angle z2))))
   (define (div-complex z1 z2)
-    (newline)
-    (display "DIV-COMPLEX")
-    (newline)
-    (display (list z1 z2))
-    (newline)
-    (display (list (magnitude z1) (magnitude z2)))
     (make-from-mag-ang (div (magnitude z1) (magnitude z2))
                        (sub (angle z1) (angle z2))))
 

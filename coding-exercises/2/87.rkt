@@ -263,11 +263,6 @@
           (list (the-empty-termlist L1) L1)
           (let ((new-c (div (coeff t1) (coeff t2)))
                 (new-o (- (order t1) (order t2))))
-            (display (list new-c new-o t1 t2 (sub-terms L1
-                                                (mul-terms
-                                                  (make-term-list (list (make-term new-o new-c)))
-                                                  L2))))
-            (newline)
             (let ((rest-of-result (div-terms
                                     (sub-terms L1
                                                (mul-terms
@@ -320,10 +315,11 @@
                                          (term 1 test-integer))))
 (define test-poly2 (make-polynomial 'x (sparse-termlist
                                          (term 100 test-complex)
+                                         (term 2 test-real)
                                          (term 1 test-rat)
                                          (term 0 test-integer))))
 (define test-poly3 (make-polynomial 'x (sparse-termlist
-                                         (term 1 2)
+                                         (term 50 test-rat)
                                          (term 0 2))))
 ((lambda ()
    (newline)
@@ -366,7 +362,7 @@
    (display (sub test-dense-poly test-poly3))))
 
 ;; 91
-;; Fill in the gaps excercise, should be easy right? :^)
+;; Fill in the gaps excercise, should be easy right? :^) (NOTE(mike): it wasn't.)
 ((lambda ()
    (newline)
    (display (div test-poly3 test-poly3))
@@ -374,8 +370,7 @@
    (display (div (make-polynomial 'x (dense-termlist (term 3 100)))
                  (make-polynomial 'x (dense-termlist (term 3 10)))))
    (newline)
+   (display (div test-poly2 test-poly1))
    (newline)
-   (display (list test-poly2 test-poly1))
    (newline)
-   (newline)
-   (display (div test-poly2 test-poly1))))
+   (display (div test-poly2 test-poly3))))

@@ -9,7 +9,7 @@
     (attach-tag 'real datum))
   (define (make i)
     (let ((n (exact->inexact i)))
-      (if (< n threshold)
+      (if (< (abs n) threshold)
         0.0
         n)))
   (define (raiseme r)
