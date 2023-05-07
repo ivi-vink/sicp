@@ -53,6 +53,9 @@
 
   (put 'add '(complex complex)
        (lambda (z1 z2) (typetag (add-complex z1 z2))))
+  (put 'neg '(complex)
+       (lambda (z) (typetag (make-from-real-imag (- (real-part z))
+                                                 (- (imag-part z))))))
   (put 'sub '(complex complex)
        (lambda (z1 z2) (typetag (sub-complex z1 z2))))
   (put 'mul '(complex complex)

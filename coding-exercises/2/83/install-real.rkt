@@ -14,6 +14,7 @@
   (put 'make 'real (lambda (x) (tagme (make x))))
   ;; methods
   (put 'add '(real real) (lambda (x y) (tagme (make (+ x y)))))
+  (put 'neg '(real) (lambda (x) (tagme (make (- x)))))
   (put 'sub '(real real) (lambda (x y) (tagme (make (- x y)))))
   (put 'mul '(real real) (lambda (x y) (tagme (make (* x y)))))
   (put 'div '(real real) (lambda (x y) (tagme (make (/ x y)))))

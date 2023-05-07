@@ -7,7 +7,78 @@
 (define put (cadr get-put-apply))
 (define apply-fn (caddr get-put-apply))
 
-(define (install-polynomial-package put)
+(define (install-term-package put)
+  (define (tagme term)
+    (attach-tag 'term term))
+  (put 'make-from-order-coeff 'term (lambda (order coeff) (tagme (list order coeff))))
+  (put 'order '(term) (lambda (term) (car term)))
+  (put 'coeff '(term) (lambda (term) (cadr term))))
+
+(define (install-sparse-termlist-package put)
+  ;; methods imported from term package
+  (define (order term)
+    ((get 'order '(term)) term))
+  (define (coeff term)
+    ((get 'coeff '(term)) term))
+  (define (make-term order coeff)
+    ((get 'make-from-order-coeff 'term) order coeff))
+
+  ;; selectors
+  ;; export first term as typed term
+  (define (first-term term-list)
+    (let ((term (car term-list)))
+      (make-term (car term)
+                 (cdr term))))
+  (define (rest-terms term-list) (cdr term-list))
+
+  ;; ops
+  ;; map neg over internal storage type (order coeff)
+  (define (neg termlist)
+    (map (lambda (term)
+           (cons
+             (car term)
+             (apply-fn 'neg (cdr term))))
+         termlist))
+
+  ;; convert term contents to our format
+  (define (term-contents->order-coeff-pair term)
+    (cons (order term)
+          (coeff term)))
+  (define (adjoin-term term term-list)
+    (if (=zero? (coeff term))
+      term-list
+      (cons (term-contents->order-coeff-pair term)
+            term-list)))
+
+  ;; preds
+  (define (the-empty-termlist) '())
+  (define (empty-termlist? term-list) (null? term-list))
+
+  ;; constructors
+  ;; store as ((order coeff)), list of untyped (order coeff) pairs
+  (define (term->order-coeff-pair term)
+    (cons (apply-fn 'order term)
+          (apply-fn 'coeff term)))
+  (define (make-from-terms terms)
+    (map term->order-coeff-pair terms))
+
+
+  ;; interface methods
+  (define (tagme datum)
+    (attach-tag 'sparse-termlist datum))
+  ;; constructors
+  (put 'make-from-terms 'sparse-termlist (lambda (t) (tagme (make-from-terms t))))
+  ;; ops
+  (put 'neg '(sparse-termlist) (lambda (termlist) (tagme (neg termlist))))
+  (put 'adjoin-term '(term sparse-termlist) (lambda (term termlist) (tagme (adjoin-term term termlist))))
+  (put 'rest-terms '(sparse-termlist) (lambda (termlist) (tagme (rest-terms termlist))))
+  ;; term selector
+  (put 'first-term '(sparse-termlist) first-term)
+  ;; pred
+  (put 'empty-termlist? '(sparse-termlist) empty-termlist?)
+  (put 'the-empty-termlist 'sparse-termlist (lambda () (tagme (the-empty-termlist)))))
+
+(define (install-polynomial-package put get)
   ;; internal procedures
   (define (tagme p)
     (attach-tag 'polynomial p))
@@ -15,23 +86,37 @@
   (define (same-variable? x y) (and (variable? x) (variable? y) (eq? x y)))
 
   ;; terms
-  (define (make-term order coeff) (list order coeff))
-  (define (order term) (car term))
-  (define (coeff term) (cadr term))
+  (install-term-package put)
+  (define (make-term order coeff)
+    ((get 'make-from-order-coeff 'term) order coeff))
+  (define (order term)
+    (apply-fn 'order term))
+  (define (coeff term)
+    (apply-fn 'coeff term))
 
   ;; termlists
-  (define (adjoin-term term term-list)
-    (if (=zero? (coeff term))
-      term-list
-      (cons term term-list)))
-  (define (the-empty-termlist) '())
-  (define (first-term term-list) (car term-list))
-  (define (rest-terms term-list) (cdr term-list))
-  (define (empty-termlist? term-list) (null? term-list))
+  (install-sparse-termlist-package put)
+  (define (make-term-list terms)
+    ((get 'make-from-terms 'sparse-termlist) terms))
+  (define (empty-termlist? termlist)
+    (apply-fn 'empty-termlist? termlist))
+  (define (the-empty-termlist termlist)
+    ((get 'the-empty-termlist (type-tag termlist))))
+  (define (first-term termlist)
+    (apply-fn 'first-term termlist))
+  (define (adjoin-term term termlist)
+    (apply-fn 'adjoin-term term termlist))
+  (define (rest-terms termlist)
+    (apply-fn 'rest-terms termlist))
 
   ;; polys
+  (define (ensure-termlist termlist)
+    (if (or
+          (equal? 'sparse-termlist (type-tag termlist)))
+      termlist
+      (error "Unsupported type-tag for termlist --" termlist)))
   (define (make-poly variable term-list)
-    (cons variable term-list))
+    (cons variable (ensure-termlist term-list)))
   (define (variable p) (car p))
   (define (term-list p) (cdr p))
 
@@ -67,17 +152,13 @@
   (define (neg-poly poly)
     (make-poly
       (variable poly)
-      (map (lambda (term)
-             (make-term
-               (order term)
-               (apply-fn 'neg (coeff term))))
-           (term-list poly))))
+      (apply-fn 'neg (term-list poly))))
   (define (sub-poly p1 p2)
     (add-poly p1 (neg-poly p2)))
 
   (define (mul-term-by-all-terms t1 L)
     (if (empty-termlist? L)
-      (the-empty-termlist)
+      (the-empty-termlist L)
       (let ((t2 (first-term L)))
         (adjoin-term (make-term
                        (+ (order t1) (order t2))
@@ -85,7 +166,7 @@
                      (mul-term-by-all-terms t1 (rest-terms L))))))
   (define (mul-terms L1 L2)
     (if (empty-termlist? L1)
-      (the-empty-termlist)
+      (the-empty-termlist L1)
       (add-terms (mul-term-by-all-terms (first-term L1) L2)
                  (mul-terms (rest-terms L1) L2))))
   (define (mul-poly p1 p2)
@@ -105,25 +186,30 @@
   ;;interface
   (put 'add '(polynomial polynomial) (lambda (p1 p2) (tagme (add-poly p1 p2))))
   (put 'neg '(polynomial) (lambda (p) (tagme (neg-poly p))))
-  (put 'sub '(polynomial polynomial) (lambda (p1 p2) (tagme (sub-poly p1 p2))))
+  (put 'sub '(polynomial polynomial) (lambda (p1 p2)
+                                       (tagme (sub-poly p1 p2))))
   (put 'mul '(polynomial polynomial) (lambda (p1 p2) (tagme (mul-poly p1 p2))))
   (put 'make 'polynomial
        (lambda (var terms) (tagme (make-poly var terms))))
   'done)
 
-(install-polynomial-package put)
+(install-polynomial-package put get)
+(define (term order coeff)
+  ((get 'make-from-order-coeff 'term) order coeff))
+(define (sparse-termlist . terms)
+  ((get 'make-from-terms 'sparse-termlist) terms))
 (define (make-polynomial var terms)
   ((get 'make 'polynomial) var terms))
-(define test-poly1 (make-polynomial 'x (list
-                                         (list 1 test-integer))))
-(define test-poly2 (make-polynomial 'x (list
-                                         (list 100 test-complex)
-                                         (list 3 test-real)
-                                         (list 1 test-rat)
-                                         (list 0 test-integer))))
-(define test-poly3 (make-polynomial 'x (list
-                                         (list 1 2)
-                                         (list 0 2))))
+(define test-poly1 (make-polynomial 'x (sparse-termlist
+                                         (term 1 test-integer))))
+(define test-poly2 (make-polynomial 'x (sparse-termlist
+                                         (term 100 test-complex)
+                                         (term 3 test-real)
+                                         (term 1 test-rat)
+                                         (term 0 test-integer))))
+(define test-poly3 (make-polynomial 'x (sparse-termlist
+                                         (term 1 2)
+                                         (term 0 2))))
 ((lambda ()
    (newline)
    (display (add test-poly2 test-poly2))
@@ -134,7 +220,8 @@
 
 ;;87
 (=zero? test-poly3)
-(=zero? (make-polynomial 'x (list (list 1000 0))))
+(=zero? (make-polynomial 'x (sparse-termlist
+                              (term 1000 0))))
 
 ;; 88
 ;; what is meant with negation here? Negation of a number? Making a negative number?
@@ -144,3 +231,6 @@
    (display (sub test-poly1 test-poly3))
    (newline)
    (display (sub test-poly1 test-poly2))))
+
+;; 89
+;; Dense polys are just lists where the length of the sublist until the term is the order of the term

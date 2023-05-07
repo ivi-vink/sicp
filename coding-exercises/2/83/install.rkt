@@ -86,6 +86,8 @@
   (apply-fn '=zero? datum))
 (define (add a1 a2)
   (apply-fn 'add a1 a2))
+(define (neg a)
+  (apply-fn 'neg a))
 (define (sub a1 a2)
   (apply-fn 'sub a1 a2))
 (define (mul a1 a2)
