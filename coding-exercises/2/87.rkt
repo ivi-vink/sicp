@@ -233,4 +233,6 @@
    (display (sub test-poly1 test-poly2))))
 
 ;; 89
-;; Dense polys are just lists where the length of the sublist until the term is the order of the term
+;; First we made the polynomial package generic for sparse polys
+;; Then we added dense polys as allowed types just lists where the length of the sublist until the term is the order of the term
+;; When we do this, we can even put some heuristics to decide to save polys in the optimal format by scanning and reconstructing the term list during poly construction.
