@@ -49,7 +49,7 @@
                    get))
 
 (install-integer put get)
-(install-rational put get)
+(install-rational get put apply-fn)
 (install-real put get)
 (install-complex apply-fn get put)
 (install-polynomial get put apply-fn)
