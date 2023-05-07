@@ -73,7 +73,8 @@
   ((get 'make-from-mag-ang 'complex) x y))
 (define test-complex (make-complex 1 2))
 (define test-complex-rect (make-complex-rect 1 2))
-(define test-complex-polar (make-complex-rect 1 2))
+(define test-complex-polar (make-complex-polar (apply-fn 'magnitude test-complex)
+                                               (apply-fn 'angle test-complex)))
 
 ;; polynomial
 (define (make-polynomial var terms)

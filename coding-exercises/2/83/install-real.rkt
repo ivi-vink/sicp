@@ -3,11 +3,15 @@
 (require "../../../shared/data-directed-programming.rkt")
 
 (define (install-real put get)
+  (define threshold 0.00001)
   ;; local methods
   (define (tagme datum)
     (attach-tag 'real datum))
   (define (make i)
-    (exact->inexact i))
+    (let ((n (exact->inexact i)))
+      (if (< n threshold)
+        0.0
+        n)))
   (define (raiseme r)
     ((get 'make-from-real-imag 'complex) r 0))
   ;; constructor
@@ -29,5 +33,5 @@
   (put 'atan '(real real) (lambda (x y) (atan x y)))
   ;; predicates
   (put 'equ? '(real real) (lambda (x y) (= x y)))
-  (put '=zero? '(real) (lambda (x) (= 0 x)))
+  (put '=zero? '(real) (lambda (x) (< x threshold)))
   'done)

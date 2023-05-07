@@ -78,6 +78,70 @@
   (put 'empty-termlist? '(sparse-termlist) empty-termlist?)
   (put 'the-empty-termlist 'sparse-termlist (lambda () (tagme (the-empty-termlist)))))
 
+(define (install-dense-termlist-package put)
+  ;; methods imported from term package
+  (define (order term)
+    ((get 'order '(term)) term))
+  (define (coeff term)
+    ((get 'coeff '(term)) term))
+  (define (make-term order coeff)
+    ((get 'make-from-order-coeff 'term) order coeff))
+
+  ;; selectors
+  ;; export first term as typed term
+  (define (first-term term-list)
+    (let ((term (car term-list)))
+      (make-term (- (length term-list) 1)
+                 term)))
+  (define (rest-terms term-list) (cdr term-list))
+
+  ;; ops
+  ;; map neg over internal storage type (coeff ...)
+  (define (neg termlist)
+    (map (lambda (term)
+           (apply-fn 'neg term))
+         termlist))
+
+  ;; convert term contents to our format
+  (define (term-contents->dense-format term)
+    (coeff term))
+  (define (adjoin-term term term-list)
+    (cond ((=zero? (coeff term)) term-list)
+          ((= (order term)
+              (length term-list))
+           (cons (term-contents->dense-format term) term-list))
+          (else (adjoin-term term (cons 0 term-list)))))
+
+  ;; preds
+  (define (the-empty-termlist) '())
+  (define (empty-termlist? term-list) (null? term-list))
+
+  ;; constructors
+  ;; store as ((order coeff)), list of untyped (order coeff) pairs
+  (define (make-from-terms terms)
+    (if (and (pair? terms)
+             (not (equal? 'term (type-tag (car terms)))))
+      (error "Make-from-terms encountered non-term --" terms)
+      (cond ((null? terms) (the-empty-termlist))
+            (else (adjoin-term (contents (car terms))
+                               (make-from-terms (cdr terms)))))))
+
+
+  ;; interface methods
+  (define (tagme datum)
+    (attach-tag 'dense-termlist datum))
+  ;; constructors
+  (put 'make-from-terms 'dense-termlist (lambda (t) (tagme (make-from-terms t))))
+  ;; ops
+  (put 'neg '(dense-termlist) (lambda (termlist) (tagme (neg termlist))))
+  (put 'adjoin-term '(term dense-termlist) (lambda (term termlist) (tagme (adjoin-term term termlist))))
+  (put 'rest-terms '(dense-termlist) (lambda (termlist) (tagme (rest-terms termlist))))
+  ;; term selector
+  (put 'first-term '(dense-termlist) first-term)
+  ;; pred
+  (put 'empty-termlist? '(dense-termlist) empty-termlist?)
+  (put 'the-empty-termlist 'dense-termlist (lambda () (tagme (the-empty-termlist)))))
+
 (define (install-polynomial-package put get)
   ;; internal procedures
   (define (tagme p)
@@ -96,6 +160,7 @@
 
   ;; termlists
   (install-sparse-termlist-package put)
+  (install-dense-termlist-package put)
   (define (make-term-list terms)
     ((get 'make-from-terms 'sparse-termlist) terms))
   (define (empty-termlist? termlist)
@@ -112,7 +177,8 @@
   ;; polys
   (define (ensure-termlist termlist)
     (if (or
-          (equal? 'sparse-termlist (type-tag termlist)))
+          (equal? 'sparse-termlist (type-tag termlist))
+          (equal? 'dense-termlist (type-tag termlist)))
       termlist
       (error "Unsupported type-tag for termlist --" termlist)))
   (define (make-poly variable term-list)
@@ -149,12 +215,23 @@
                             (term-list p2)))
       (error "Polys not in same var -- ADD-POLY" (list p1 p2))))
 
-  (define (neg-poly poly)
-    (make-poly
-      (variable poly)
-      (apply-fn 'neg (term-list poly))))
+  (define (neg-poly p)
+    (make-poly (variable p)
+               (apply-fn 'neg (term-list p))))
+
+  (define (sub-terms L1 L2)
+    (add-terms L1
+               (apply-fn 'neg L2)))
+
   (define (sub-poly p1 p2)
-    (add-poly p1 (neg-poly p2)))
+    (if (same-variable? (variable p1)
+                        (variable p2))
+      (make-poly
+        (variable p1)
+        (sub-terms (term-list p1)
+                   (term-list p2)))
+      (error "Polys not in same var -- MUL-POLY" (list p1 p2))))
+
 
   (define (mul-term-by-all-terms t1 L)
     (if (empty-termlist? L)
@@ -176,6 +253,42 @@
                  (mul-terms (term-list p1)
                             (term-list p2)))
       (error "Polys not in same var -- MUL-POLY" (list p1 p2))))
+
+  (define (div-terms L1 L2)
+    (if (empty-termlist? L1)
+      (list (the-empty-termlist L1) (the-empty-termlist L1))
+      (let ((t1 (first-term L1))
+            (t2 (first-term L2)))
+        (if (> (order t2) (order t1))
+          (list (the-empty-termlist L1) L1)
+          (let ((new-c (div (coeff t1) (coeff t2)))
+                (new-o (- (order t1) (order t2))))
+            (display (list new-c new-o t1 t2 (sub-terms L1
+                                                (mul-terms
+                                                  (make-term-list (list (make-term new-o new-c)))
+                                                  L2))))
+            (newline)
+            (let ((rest-of-result (div-terms
+                                    (sub-terms L1
+                                               (mul-terms
+                                                 (make-term-list (list (make-term new-o new-c)))
+                                                 L2))
+                                    L2)))
+              (list
+                (adjoin-term
+                  (make-term new-o new-c)
+                  (car rest-of-result))
+                (cadr rest-of-result))))))))
+
+  (define (div-poly p1 p2)
+    (if (same-variable? (variable p1)
+                        (variable p2))
+      (cons
+        (variable p1)
+        (div-terms (term-list p1)
+                   (term-list p2)))
+      (error "Polys not in same var -- DIV-POLY" (list p1 p2))))
+
   (define (polynomial-=zero? poly)
     (define (rec term-list)
       (cond ((empty-termlist? term-list) true)
@@ -189,6 +302,7 @@
   (put 'sub '(polynomial polynomial) (lambda (p1 p2)
                                        (tagme (sub-poly p1 p2))))
   (put 'mul '(polynomial polynomial) (lambda (p1 p2) (tagme (mul-poly p1 p2))))
+  (put 'div '(polynomial polynomial) (lambda (p1 p2) (tagme (div-poly p1 p2))))
   (put 'make 'polynomial
        (lambda (var terms) (tagme (make-poly var terms))))
   'done)
@@ -198,13 +312,14 @@
   ((get 'make-from-order-coeff 'term) order coeff))
 (define (sparse-termlist . terms)
   ((get 'make-from-terms 'sparse-termlist) terms))
+(define (dense-termlist . terms)
+  ((get 'make-from-terms 'dense-termlist) terms))
 (define (make-polynomial var terms)
   ((get 'make 'polynomial) var terms))
 (define test-poly1 (make-polynomial 'x (sparse-termlist
                                          (term 1 test-integer))))
 (define test-poly2 (make-polynomial 'x (sparse-termlist
                                          (term 100 test-complex)
-                                         (term 3 test-real)
                                          (term 1 test-rat)
                                          (term 0 test-integer))))
 (define test-poly3 (make-polynomial 'x (sparse-termlist
@@ -232,7 +347,35 @@
    (newline)
    (display (sub test-poly1 test-poly2))))
 
-;; 89
+;; 89/90
 ;; First we made the polynomial package generic for sparse polys
 ;; Then we added dense polys as allowed types just lists where the length of the sublist until the term is the order of the term
 ;; When we do this, we can even put some heuristics to decide to save polys in the optimal format by scanning and reconstructing the term list during poly construction.
+;; For now the type of the second argument is used if both become empty at the same time, otherwise the one with more terms is used
+(define test-dense-poly (make-polynomial 'x (dense-termlist
+                                              (term 10 3)
+                                              (term 0 1))))
+((lambda ()
+   (newline)
+   (display test-dense-poly)
+   (newline)
+   (display (add test-dense-poly test-poly3))
+   (newline)
+   (display (mul test-dense-poly test-poly3))
+   (newline)
+   (display (sub test-dense-poly test-poly3))))
+
+;; 91
+;; Fill in the gaps excercise, should be easy right? :^)
+((lambda ()
+   (newline)
+   (display (div test-poly3 test-poly3))
+   (newline)
+   (display (div (make-polynomial 'x (dense-termlist (term 3 100)))
+                 (make-polynomial 'x (dense-termlist (term 3 10)))))
+   (newline)
+   (newline)
+   (display (list test-poly2 test-poly1))
+   (newline)
+   (newline)
+   (display (div test-poly2 test-poly1))))
