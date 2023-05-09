@@ -15,6 +15,24 @@
 (define rf (make-rat p2 p1))
 ((lambda ()
    (newline)
-   (display rf)
    (newline)
-   (display (add rf rf))))
+   (newline)
+   (newline)
+   (display (list "RESULT --" rf))
+   (newline)
+   (newline)
+   (display (list "RESULT --" (add rf rf)))
+   (newline)
+   (newline)
+   (define test-p1 (make-polynomial 'x
+                                    (sparse-termlist
+                                      (term 4 1)
+                                      (term 3 -1)
+                                      (term 2 -2)
+                                      (term 1 2))))
+   (define test-p2 (make-polynomial 'x
+                                    (sparse-termlist
+                                      (term 3 1)
+                                      (term 1 -1))))
+
+   (display (list "RESULT GCD --" (greatest-common-divisor test-p1 test-p2)))))

@@ -27,6 +27,7 @@
     ((symbol? datum) 'symbol)
     ((exact-integer? datum) 'integer)
     ((inexact-real? datum) 'real)
+    ((rational? datum) 'real)
     ((number? datum) 'scheme-number)
     ((boolean? datum) 'boolean)
     (else (error "Bad tagged datum -- TYPE-TAG" datum))))
@@ -53,6 +54,7 @@
     (newline)
     (println dispatch-table))
   (define (get op types)
+    ; (display (list "GET -- " op types))
     (let ((op-datum (find-type op dispatch-table)))
       (if op-datum
         (let ((proc-datum (find-type types (contents op-datum))))
@@ -247,6 +249,7 @@
       datum))
 
   (lambda (op . args)
+    ; (display (list "APPLY -- " op args))
     (let ((proc (get op (map type-tag args))))
       (if proc
         (towerdrop (apply proc (map contents args)))

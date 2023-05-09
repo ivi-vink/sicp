@@ -17,6 +17,15 @@
   ;; constructor
   (put 'make 'real (lambda (x) (tagme (make x))))
   ;; methods
+
+  (define (gcd-real a b)
+    (if (and (integer? a)
+             (integer? b))
+      (if (= b 0)
+        a
+        (gcd-real b (remainder a b)))
+      a))
+
   (put 'add '(real real) (lambda (x y) (tagme (make (+ x y)))))
   (put 'neg '(real) (lambda (x) (tagme (make (- x)))))
   (put 'sub '(real real) (lambda (x y) (tagme (make (- x y)))))
@@ -25,6 +34,7 @@
   (put 'raise '(real) raiseme)
   (put 'project '(real) (lambda (n)
                           ((get 'make 'rational) n 1.0)))
+  (put 'greatest-common-divisor '(real real) (lambda (a b) (tagme (gcd-real a b))))
   ;; sqrt and trig methods for complex nums
   (put 'sqr '(real) sqr)
   (put 'sqrt '(real) sqrt)

@@ -17,6 +17,8 @@
   (define (mul a b)
     (apply-fn 'mul a b))
   (define (div a b)
+    (newline)
+    (display (list "Calling div from rat package" a b))
     (apply-fn 'div a b))
   (define (cos a)
     (apply-fn 'cos a))
@@ -29,8 +31,28 @@
   (define (atan a b)
     (apply-fn 'atan a b))
 
+  (define (gcd a b)
+    (newline)
+    (newline)
+    (display (list "GCD RATIONAL -- " a b))
+    (let ((proc (get 'greatest-common-divisor (list (type-tag a) (type-tag b)))))
+      (if proc
+        (proc (contents a) (contents b))
+        (error "Not implemented -- " (list 'greatest-common-divisor (type-tag a) (type-tag b))))))
+
+
   ;; constructor and selectors
-  (define (make-rat n d) (list n d))
+  (define (make-rat n d)
+    (let ((g (gcd n d)))
+      (let ((numer-div (get 'div (list (type-tag n) (type-tag g))))
+            (denom-div (get 'div (list (type-tag d) (type-tag g)))))
+        (if (and numer-div denom-div)
+          (list (numer-div (contents n) (contents g))
+                (denom-div (contents d) (contents g)))
+          (list n d)))))
+
+
+
   (define (numer x) (car x))
   (define (denom x) (cadr x))
 

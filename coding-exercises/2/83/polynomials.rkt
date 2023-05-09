@@ -321,14 +321,22 @@
       (error "Polys not in same var -- MUL-POLY" (list p1 p2))))
 
   (define (div-terms L1 L2)
+    (newline)
+    (newline)
+    (display (list "DIV-TERMS -- " L1 L2))
+    (newline)
     (if (empty-termlist? L1)
-      (list (the-empty-termlist L1) (the-empty-termlist L1))
+      (list (the-empty-termlist L1)
+            (the-empty-termlist L1))
       (let ((t1 (first-term L1))
             (t2 (first-term L2)))
         (if (> (order t2) (order t1))
           (list (the-empty-termlist L1) L1)
           (let ((new-c (div (coeff t1) (coeff t2)))
                 (new-o (sub (order t1) (order t2))))
+            (newline)
+            (display (list "NEW-TERM coeff --" new-c (type-tag (coeff t1))
+                           (type-tag (coeff t2))))
             (let ((rest-of-result (div-terms
                                     (sub-terms L1
                                                (mul-terms
@@ -341,13 +349,40 @@
                   (car rest-of-result))
                 (cadr rest-of-result))))))))
 
-  (define (div-poly p1 p2)
+  (define (remainder-terms L1 L2)
+    (let ((result-remainder-list (div-terms L1 L2)))
+      (cadr result-remainder-list)))
+
+  (define (gcd-terms a b)
+    (newline)
+    (newline)
+    (display (list a b (empty-termlist? b)))
+    (if (empty-termlist? b)
+      a
+      (gcd-terms b (remainder-terms a b))))
+
+  (define (gcd-poly p1 p2)
+    (newline)
+    (newline)
+    (display (list p1 p2))
     (if (same-variable? (variable p1)
                         (variable p2))
       (cons
         (variable p1)
-        (div-terms (term-list p1)
+        (gcd-terms (term-list p1)
                    (term-list p2)))
+      (error "Polys not in same var -- DIV-POLY" (list p1 p2))))
+
+  (define (div-poly p1 p2)
+    (if (same-variable? (variable p1)
+                        (variable p2))
+      (let ((result (div-terms (term-list p1)
+                               (term-list p2))))
+        (if (empty-termlist? (cadr result))
+          (cons (variable p1)
+                (car result))
+          (cons (variable p1)
+                result)))
       (error "Polys not in same var -- DIV-POLY" (list p1 p2))))
 
   (define (polynomial-=zero? poly)
@@ -366,4 +401,6 @@
   (put 'div '(polynomial polynomial) (lambda (p1 p2) (tagme (div-poly p1 p2))))
   (put 'make 'polynomial
        (lambda (var terms) (tagme (make-poly var terms))))
+  (put 'greatest-common-divisor '(polynomial polynomial) (lambda (a b) (tagme (gcd-poly a b))))
+
   'done)

@@ -31,7 +31,8 @@
          sqrme
          sqrtme
          raiseme
-         dropme)
+         dropme
+         greatest-common-divisor)
 
 (require "./install-integer.rkt"
          "./install-rational.rkt"
@@ -82,7 +83,8 @@
   ((get 'make-from-mag-ang 'complex) x y))
 (define test-complex (make-complex 1 2))
 (define test-complex-rect (make-complex-rect 1 2))
-(define test-complex-polar (make-complex-polar (apply-fn 'magnitude test-complex) (apply-fn 'angle test-complex)))
+; (define test-complex-polar (make-complex-polar (apply-fn 'magnitude test-complex) (apply-fn 'angle test-complex)))
+(define test-complex-polar '())
 
 ;; polynomial
 (define (term order coeff)
@@ -133,3 +135,5 @@
   (apply-fn 'sin datum))
 (define (atanme a1 a2)
   (apply-fn 'atan a2))
+(define (greatest-common-divisor p1 p2)
+  (apply-fn 'greatest-common-divisor p1 p2))
