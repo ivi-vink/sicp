@@ -36,3 +36,31 @@
                                       (term 1 -1))))
 
    (display (list "RESULT GCD --" (greatest-common-divisor test-p1 test-p2)))))
+
+;; 95
+;; I represented reals as inexact decimals so our gcd breaks down here
+;; Even more, I didn't bother with inexact gcd and the real gcd just returns the dividend
+((lambda ()
+   (define p1 (make-polynomial 'x
+                               (sparse-termlist
+                                 (term 2 1) (term 1 -2) (term 0 1))))
+   (define p2 (make-polynomial 'x
+                               (sparse-termlist
+                                 (term 2 11) (term 0 7))))
+   (define p3 (make-polynomial 'x
+                               (sparse-termlist
+                                 (term 1 13) (term 0 5))))
+   (define q1 (mul p1 p2))
+   (define q2 (mul p1 p3))
+   (newline)
+   (newline)
+   (newline)
+   (newline)
+   (newline)
+   (display q1)
+   (newline)
+   (display q2)
+   (newline)
+   (display (greatest-common-divisor q1 q2))))
+
+;; 96
