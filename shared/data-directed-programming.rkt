@@ -28,7 +28,7 @@
     ((exact-integer? datum) 'integer)
     ((inexact-real? datum) 'real)
     ((rational? datum) 'real)
-    ((number? datum) 'scheme-number)
+    ((number? datum) 'real)
     ((boolean? datum) 'boolean)
     (else (error "Bad tagged datum -- TYPE-TAG" datum))))
 (define (contents datum)
@@ -257,4 +257,4 @@
           (let ((raised-proc (get op (map type-tag raised-args))))
             (if raised-proc
                (towerdrop (apply raised-proc (map contents raised-args)))
-               (error "Could not apply --" (list op raised-args)))))))))
+               (error "Could not apply --" (list op raised-args (map type-tag raised-args))))))))))

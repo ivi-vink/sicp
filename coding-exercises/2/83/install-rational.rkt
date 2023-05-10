@@ -97,8 +97,8 @@
       ((get 'make 'integer) (/ (numer rat) (denom rat)))
       (list 'undefined)))
   (define (raiseme rat)
-    (if (and (integer? (numer rat))
-             (integer? (denom rat)))
+    (if (and (number? (numer rat))
+             (number? (denom rat)))
       ((get 'make 'real) (/ (numer rat) (denom rat)))
       (list 'undefined)))
 
@@ -120,6 +120,8 @@
        (lambda (x y) (tagme (div-rat x y))))
   (put 'raise '(rational) raiseme)
   (put 'project '(rational) dropme)
+  ;; expt for integerizing factor
+  (put 'expt '(rational rational) (lambda (r1 r2) (expt (raiseme r1) (raiseme r2))))
   ;; sqrt and trig methods for complex nums
   (put 'sqr '(rational) (lambda (r) (sqr (raiseme r))))
   (put 'sqrt '(rational) (lambda (r) (sqrt (raiseme r))))

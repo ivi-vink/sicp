@@ -58,6 +58,26 @@
              (apply-fn 'neg (cdr term))))
          termlist))
 
+  (define (iter-terms result fn terms)
+   (cond ((empty-termlist? terms) result)
+         (else (iter-terms
+                 (fn (first-term terms) result)
+                 fn
+                 (rest-terms terms)))))
+
+  (define (gcd-sparse-termlist termlist)
+    (newline)
+    (newline)
+    (display (list "GCD-SPARSE-TERMLIST --" (apply-fn 'coeff (first-term termlist)) termlist))
+    (newline)
+    (iter-terms (apply-fn 'coeff (first-term termlist))
+                (lambda (term result)
+                  (newline)
+                  (display (list "GCD-SPARSE-TERMLIST TRACE --" term result))
+                  (newline)
+                  (apply-fn 'greatest-common-divisor (apply-fn 'coeff term) result))
+                (rest-terms termlist)))
+
   ;; convert term contents to our format
   (define (term-contents->order-coeff-pair term)
     (cons (order term)
@@ -94,7 +114,9 @@
   (put 'first-term '(sparse-termlist) first-term)
   ;; pred
   (put 'empty-termlist? '(sparse-termlist) empty-termlist?)
-  (put 'the-empty-termlist 'sparse-termlist (lambda () (tagme (the-empty-termlist)))))
+  (put 'the-empty-termlist 'sparse-termlist (lambda () (tagme (the-empty-termlist))))
+  ;; returns number
+  (put 'gcd '(sparse-termlist) (lambda (termlist) (gcd-sparse-termlist termlist))))
 
 (define (install-dense-termlist-package get put apply-fn)
   ;; methods imported from term package
@@ -353,18 +375,87 @@
     (let ((result-remainder-list (div-terms L1 L2)))
       (cadr result-remainder-list)))
 
+  (define (pseudoremainder-terms P Q)
+    (newline)
+    (display (list "PSEUDOREMAINDER-TERMS --" P Q))
+    (newline)
+    (newline)
+    (display (list "PSEUDOREMAINDER-TERMS order --" (first-term P) (first-term Q)))
+    (newline)
+    (newline)
+    (let ((O1 (order (first-term P)))
+          (O2 (order (first-term Q)))
+          (c (coeff (first-term Q))))
+      (let ((integerizing-factor (apply-fn 'expt c (+ 1 O1 (- O2)))))
+        (display (list "INTEGERIZING-FACTOR --" c (+ 1 O1 (- O2)) integerizing-factor))
+        (let ((integerized-p (mul-terms
+                               (make-term-list (list (make-term 0 integerizing-factor)))
+                               P)))
+          (let ((result-remainder-list (div-terms integerized-p Q)))
+            (cadr result-remainder-list))))))
+
+
+  ;; TODO(mike): this should take a list of term list and compute the gcd of all the coefficients of the termlist
+  (define (remove-common-factors . a)
+    (let ((g (apply-fn 'gcd a)))
+      (newline)
+      (newline)
+      (display (list "GCD-TERMS result gcd --" g a))
+      (newline)
+      (newline)
+      (let ((common-factors-removed-a (div-terms
+                                        a
+                                        (make-term-list (list (make-term 0 g))))))
+
+        (get-if-divided common-factors-removed-a))))
+
+  (define (get-if-divided a)
+    (if (empty-termlist? (cadr a))
+      (car a)
+      (error "GET-IF-DIVIDED -- did not divide")))
+
   (define (gcd-terms a b)
     (newline)
-    (newline)
     (display (list a b (empty-termlist? b)))
+    (newline)
     (if (empty-termlist? b)
-      a
-      (gcd-terms b (remainder-terms a b))))
+      (remove-common-factors a)
+      (gcd-terms b (pseudoremainder-terms a b))))
+
+  (define (reduce-terms n d)
+    (let ((g (gcd-terms n d))
+          (O1 (max (coeff (first-term n))
+                   (coeff (first-term d)))))
+      (newline)
+      (display (list "REDUCE-TERMS g --" g))
+      (newline)
+      (let ((c (apply-fn 'expt
+                         (coeff (first-term g))
+                         (+ 1 O1 (- (order (first-term g)))))))
+        (let ((nn (remove-common-factors (get-if-divided (div-terms
+                                                           (mul-terms n (make-term-list (list (make-term 0 c))))
+                                                           g))))
+              (dd (remove-common-factors (get-if-divided (div-terms
+                                                           (mul-terms d (make-term-list (list (make-term 0 c))))
+                                                           g)))))
+          (list nn dd)))))
+
+  (define (reduce-poly p1 p2)
+    (if (same-variable? (variable p1) (variable p2))
+      (let ((reduced-polies (reduce-terms (term-list p1) (term-list p2))))
+        (list (make-poly
+                (variable p1)
+                (car reduced-polies))
+              (make-poly
+                (variable p1)
+                (cadr reduced-polies))))
+      (error "Polys not in same var -- ADD-POLY" (list p1 p2))))
 
   (define (gcd-poly p1 p2)
     (newline)
     (newline)
     (display (list p1 p2))
+    (newline)
     (if (same-variable? (variable p1)
                         (variable p2))
       (cons
@@ -393,6 +484,7 @@
     (rec (term-list poly)))
   (put '=zero? '(polynomial) polynomial-=zero?)
   ;;interface
+  (put 'reduce '(polynomial polynomial) (lambda (p1 p2) (tagme (reduce-poly p1 p2))))
   (put 'add '(polynomial polynomial) (lambda (p1 p2) (tagme (add-poly p1 p2))))
   (put 'neg '(polynomial) (lambda (p) (tagme (neg-poly p))))
   (put 'sub '(polynomial polynomial) (lambda (p1 p2)

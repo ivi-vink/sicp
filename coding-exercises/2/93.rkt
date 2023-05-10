@@ -53,14 +53,32 @@
    (define q1 (mul p1 p2))
    (define q2 (mul p1 p3))
    (newline)
-   (newline)
-   (newline)
-   (newline)
-   (newline)
    (display q1)
    (newline)
    (display q2)
    (newline)
-   (display (greatest-common-divisor q1 q2))))
+   (newline)
+   (newline)
+   (newline)
+   (newline)
+   (display (list "GREATEST-COMMON-DIVISOR" (greatest-common-divisor q1 q2)))))
 
 ;; 96
+;; integerizing factor is the c^{1+order of P-order of Q}
+;; division by first multiplying the dividend by this constant is called pseudo division
+
+;; 97
+(define (reduce n d)
+  (apply-fn 'reduce n d))
+((lambda ()
+   (define p1 (make-polynomial 'x
+                               (sparse-termlist
+                                 (term 1 6)
+                                 (term 0 1))))
+   (define p2 (make-polynomial 'x
+                               (sparse-termlist
+                                 (term 1 6))))
+   (newline)
+   (display (list "REDUCE call"))
+   (newline)
+   (display (list "REDUCE result --" (reduce p1 p2)))))

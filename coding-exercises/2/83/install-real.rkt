@@ -35,6 +35,8 @@
   (put 'project '(real) (lambda (n)
                           ((get 'make 'rational) n 1.0)))
   (put 'greatest-common-divisor '(real real) (lambda (a b) (tagme (gcd-real a b))))
+  ;; expt for integerizing factor
+  (put 'expt '(real real) expt)
   ;; sqrt and trig methods for complex nums
   (put 'sqr '(real) sqr)
   (put 'sqrt '(real) sqrt)

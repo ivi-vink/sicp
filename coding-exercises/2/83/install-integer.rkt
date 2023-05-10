@@ -21,6 +21,8 @@
   (define (gcd-integer a b)
     (newline)
     (display (list "GCD-INTEGER -- " a b))
+    (newline)
+    (newline)
     (if (= b 0)
       a
       (gcd-integer b (remainder a b))))
@@ -31,10 +33,10 @@
   (put 'sub '(integer integer) (lambda (x y) (- x y)))
   (put 'mul '(integer integer) (lambda (x y) (* x y)))
   (put 'div '(integer integer) (lambda (x y) (/ x y)))
-  (put 'greatest-common-divisor '(integer integer) (lambda (a b)
-                                                     (gcd-integer a b)))
+  (put 'greatest-common-divisor '(integer integer) gcd-integer)
   (put 'raise '(integer) raiseme)
   ;; sqrt and trig methods for complex nums
+  (put 'expt '(integer integer) expt)
   (put 'sqr '(integer) sqr)
   (put 'sqrt '(integer) sqrt)
   (put 'atan '(integer integer) atan)
