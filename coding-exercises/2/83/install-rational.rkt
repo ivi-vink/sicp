@@ -38,7 +38,7 @@
     (let ((proc (get 'greatest-common-divisor (list (type-tag a) (type-tag b)))))
       (if proc
         (proc (contents a) (contents b))
-        (error "Not implemented -- " (list 'greatest-common-divisor (type-tag a) (type-tag b))))))
+        (error "Not implemented -- " (list 'greatest-common-divisor a (type-tag a) b (type-tag b))))))
 
 
   ;; constructor and selectors

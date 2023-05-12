@@ -396,7 +396,7 @@
 
 
   ;; TODO(mike): this should take a list of term list and compute the gcd of all the coefficients of the termlist
-  (define (remove-common-factors . a)
+  (define (remove-common-factors a)
     (let ((g (apply-fn 'gcd a)))
       (newline)
       (newline)
@@ -422,6 +422,12 @@
       (remove-common-factors a)
       (gcd-terms b (pseudoremainder-terms a b))))
 
+  (define (join-terms a b)
+    (if (empty-termlist? a)
+      b
+      (join-terms (rest-terms a)
+                  (adjoin-term (first-term a) b))))
+
   (define (reduce-terms n d)
     (let ((g (gcd-terms n d))
           (O1 (max (coeff (first-term n))
@@ -432,23 +438,26 @@
       (let ((c (apply-fn 'expt
                          (coeff (first-term g))
                          (+ 1 O1 (- (order (first-term g)))))))
-        (let ((nn (remove-common-factors (get-if-divided (div-terms
-                                                           (mul-terms n (make-term-list (list (make-term 0 c))))
-                                                           g))))
-              (dd (remove-common-factors (get-if-divided (div-terms
-                                                           (mul-terms d (make-term-list (list (make-term 0 c))))
-                                                           g)))))
-          (list nn dd)))))
+        (let ((nn (get-if-divided (div-terms
+                                    (mul-terms n (make-term-list (list (make-term 0 c))))
+                                    g)))
+              (dd (get-if-divided (div-terms
+                                    (mul-terms d (make-term-list (list (make-term 0 c))))
+                                    g))))
+          (let ((common-denom-nn-dd (apply-fn 'gcd (join-terms nn dd))))
+            (let ((divisor (make-term-list (list (make-term 0 common-denom-nn-dd)))))
+              (list (div-terms nn divisor)
+                    (div-terms dd divisor))))))))
 
   (define (reduce-poly p1 p2)
     (if (same-variable? (variable p1) (variable p2))
       (let ((reduced-polies (reduce-terms (term-list p1) (term-list p2))))
         (list (make-poly
                 (variable p1)
-                (car reduced-polies))
+                (get-if-divided (car reduced-polies)))
               (make-poly
                 (variable p1)
-                (cadr reduced-polies))))
+                (get-if-divided (cadr reduced-polies)))))
       (error "Polys not in same var -- ADD-POLY" (list p1 p2))))
 
   (define (gcd-poly p1 p2)

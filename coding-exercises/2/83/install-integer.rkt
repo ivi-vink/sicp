@@ -27,6 +27,11 @@
       a
       (gcd-integer b (remainder a b))))
 
+  (define (reduce-integers n d)
+    (let ((g (gcd-integer n d)))
+      (list (/ n g)
+            (/ d g))))
+
   ;; methods
   (put 'add '(integer integer) (lambda (x y) (+ x y)))
   (put 'neg '(integer) (lambda (x) (- x)))
@@ -35,6 +40,7 @@
   (put 'div '(integer integer) (lambda (x y) (/ x y)))
   (put 'greatest-common-divisor '(integer integer) gcd-integer)
   (put 'raise '(integer) raiseme)
+  (put 'reduce '(integer integer) reduce-integers)
   ;; sqrt and trig methods for complex nums
   (put 'expt '(integer integer) expt)
   (put 'sqr '(integer) sqr)
