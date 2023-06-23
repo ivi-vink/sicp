@@ -14,7 +14,7 @@
         (else (list-lookup given-key (cdr set-of-records)))))
 
 (define (lookup given-key set-of-records)
-  (if (null? set-of-records) 
+  (if (null? set-of-records)
     false
     (let ((v (key (car set-of-records))))
       (cond ((= given-key v) v)

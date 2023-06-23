@@ -25,7 +25,7 @@
          (element-of-set? (right-branch mset)))
         ((< x (entry mset))
          (element-of-set? (left-branch mset)))))
-  
+
 (define (adjoin-set x mset)
   (cond ((null? mset) (make-entry x '() '()))
         ((= x (entry mset)) mset)
@@ -105,4 +105,3 @@
   (list->tree
     (ordered-list-intersection-set
         (tree->list set1) (tree->list set2))))
-
