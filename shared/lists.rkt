@@ -92,10 +92,6 @@
   (let ((setup (setup-n-window)))
     (iter '() (car setup) (cadr setup))))
 
-(enumerate-windows
-  (enumerate-interval 1 4)
-  2)
-
 (define (find-first pred? seq)
   (cond ((null? seq) false)
         ((pred? (car seq)) (car seq))
