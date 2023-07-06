@@ -33,7 +33,6 @@
            (begin (set-mcar! cell true)
                   false)))))
 
-
 (define (make-mutex-busy)
     (let ((cell (mlist false)))
         (define (the-mutex m)
@@ -80,6 +79,7 @@
 ;; In the book there are only examples that mention that you can use atomic operations on a single processor and for multiple processors there are special instructions that are atomic.
 ;; But in the racket manual it seems like there is no mention of two processes sharing the same memory space (there is places which run as separate os processes, potentially on a different cpu native processor).
 ;; So we could get away with atomic mode instead of the n-mutex.
+;; NOTE(): does this deadlock? There are two mutexes, but can two processes acquire one mutex and then get stuck waiting on the other?
 (define (make-semaphore-retry-mutex n)
     (let ((n-mutex (make-mutex))
           (retry-mutex (make-mutex)))
@@ -107,4 +107,36 @@
                            (map (lambda (n) (lambda () (for-each (lambda (i) (sleep 1) (print "thread: ") (print n) (print ", ") (println i)) (enumerate-interval 1 3))))
                                 (enumerate-interval 1 10)))))
 
-(define (make-semaphore-test-and-set n))
+;; Assumes single time-sliced processor context
+;; didn't feel like testing this one
+(define (make-semaphore-test-and-set n)
+    (let ((retry-cell (mlist false))
+          (n-cell (mlist false)))
+        (define (the-semaphore m)
+            (cond ((eq? m 'acquire)
+                   (cond ((test-and-set! retry-cell)
+                          (the-semaphore 'acquire))
+                         ((> n 0)
+                          (if (test-and-set! n-cell)
+                              (begin
+                               (the-semaphore 'acquire))
+                              (begin
+                               (set! n (- n 1))
+                               (clear! n-cell)
+                               (when (> n 0) (clear! retry-cell)))))
+                         ((<= n 0)
+                          (clear! n-cell)
+                          (the-semaphore 'acquire))))
+                  ((eq? m 'release)
+                   (when (test-and-set! n-cell)
+                       (the-semaphore 'release))
+                   (set! n (+ n 1))
+                   (clear! n-cell)
+                   (clear! retry-cell))))
+        the-semaphore))
+
+(when false
+    (define s (make-semaphore-test-and-set 3))
+    (parallel-execute (map (lambda (f) (lambda () (s 'acquire) (f) (s 'release)))
+                           (map (lambda (n) (lambda () (for-each (lambda (i) (sleep 1) (print "thread: ") (print n) (print ", ") (println i)) (enumerate-interval 1 3))))
+                                (enumerate-interval 1 5)))))

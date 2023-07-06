@@ -1,0 +1,30 @@
+#lang racket
+
+(require compatibility/mlist)
+;; queue methods
+(define (front-ptr q) (mcar q))
+(define (rear-ptr q) (mcdr q))
+(define (set-front-ptr! q v) (set-mcar! q v))
+(define (set-rear-ptr! q v) (set-mcdr! q v))
+(define (empty-queue? q) (null? (front-ptr q)))
+(define (make-queue) (mcons '() '()))
+(define (front-queue q)
+  (if (empty-queue? q)
+    (error "FRONT called on empty queue" q)
+    (mcar (front-ptr q))))
+(define (insert-queue! q item)
+  (let ((new-item (mlist item)))
+    (cond ((empty-queue? q)
+           (set-front-ptr! q new-item)
+           (set-rear-ptr! q new-item)
+           q)
+          (else
+            (set-mcdr! (rear-ptr q) new-item)
+            (set-rear-ptr! q new-item)
+            q))))
+(define (delete-queue! q)
+  (cond ((empty-queue? q)
+         (error "DELETE! called with an empty queue" q))
+        (else
+          (set-front-ptr! q (mcdr (front-ptr q)))
+          q)))
