@@ -9,6 +9,7 @@
  display-line
  show
  display-stream
+ display-stream-until
  stream-ref
  stream-for-each
  stream-enumerate-interval
@@ -27,6 +28,12 @@
 (define (display-line x) (newline) (display x))
 (define (show x) (display-line x) x)
 (define (display-stream s) (stream-for-each display-line s))
+(define (display-stream-until s until)
+    (cond ((< until 0) 'done)
+          ((stream-null? s) 'done)
+          (else (begin
+                 (display-line (stream-car s))
+                 (display-stream-until (stream-cdr s) (- until 1))))))
 
 (define (stream-ref s n)
     (if (= n 0)
